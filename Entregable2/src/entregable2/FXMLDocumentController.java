@@ -13,12 +13,14 @@ import java.util.ResourceBundle;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.StackedBarChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
@@ -52,10 +54,12 @@ public class FXMLDocumentController implements Initializable {
     private ImageView valenciaImage;
     @FXML
     private ImageView alicanteImage;
-    
-    double cstDefOp, vlcDefOp, alcDefOp;
     @FXML
     private HBox yearContainer;
+    
+    double cstDefOp, vlcDefOp, alcDefOp;
+    int yearToShow = 0;
+    String comarcaToShow, provinceToShow;
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -65,14 +69,29 @@ public class FXMLDocumentController implements Initializable {
         List<Integer> years = DataAccessLayer.getElectionYears();
         ObservableList<Integer> yearsList = FXCollections.observableList(years);
         for (Integer year : yearsList) {
-            System.out.println(year);
             Button b = new Button("" + year);
             b.setStyle("-fx-background-color:#ffffff;-fx-border-color:#3f51b5;-fx-border-width:2px;-fx-border-radius:2px;");
+            b.setOnAction((ActionEvent event) -> {
+                yearToShow = Integer.parseInt(b.getText());
+                updateCharts(yearToShow,provinceToShow,comarcaToShow);
+            });
             yearContainer.getChildren().add(b);
         }
-        //comarcaSelector.setItems(yearsList);
-    }    
+    }
 
+    private void updateCharts(int y, String p, String c){
+        if(yearToShow != 0 && provinceToShow != null) {
+            ObservableList<PieChart.Data> pieData = FXCollections.observableArrayList();
+            seatsDisChart.setData(null);
+            ObservableList<XYChart.Data<String,Number>> barData = FXCollections.observableArrayList();
+            partyVotesChart.setData(null);
+            // Actualiza gráficas
+            System.out.println("Año: " + yearToShow + "\nProvincia: " + provinceToShow);
+        } else {
+            System.out.println("Faltan cosas");
+        }
+    }
+    
     @FXML
     private void unfocusCst(MouseEvent event) {
         castellonImage.setOpacity(cstDefOp);
@@ -111,8 +130,10 @@ public class FXMLDocumentController implements Initializable {
         valenciaImage.setOpacity(vlcDefOp);
         alcDefOp = 0.75;
         alicanteImage.setOpacity(alcDefOp);
+        provinceToShow = "Castellon";
         seatsDisChart.setTitle("Seats distribution for Castellon");
         partyVotesChart.setTitle("Party votes in Castellon");
+        updateCharts(yearToShow, provinceToShow, comarcaToShow);
     }
 
     @FXML
@@ -123,8 +144,10 @@ public class FXMLDocumentController implements Initializable {
         valenciaImage.setOpacity(vlcDefOp);
         alcDefOp = 0.75;
         alicanteImage.setOpacity(alcDefOp);
+        provinceToShow = "Valencia";
         seatsDisChart.setTitle("Seats distribution for Valencia");
         partyVotesChart.setTitle("Party votes in Valencia");
+        updateCharts(yearToShow, provinceToShow, comarcaToShow);
     }
 
     @FXML
@@ -135,8 +158,10 @@ public class FXMLDocumentController implements Initializable {
         valenciaImage.setOpacity(vlcDefOp);
         alcDefOp = 1;
         alicanteImage.setOpacity(alcDefOp);
+        provinceToShow = "Alicante";
         seatsDisChart.setTitle("Seats distribution for Alicante");
         partyVotesChart.setTitle("Party votes in Alicante");
+        updateCharts(yearToShow, provinceToShow, comarcaToShow);
     }
     
 }
