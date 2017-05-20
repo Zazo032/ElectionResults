@@ -5,6 +5,7 @@
  */
 package entregable2;
 
+import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
@@ -46,41 +47,39 @@ public class FXMLDocumentController implements Initializable {
     @FXML
     private ImageView alicanteImage;
     
-    private void handleButtonAction(ActionEvent event) {
-        System.out.println("You clicked me!");
-        label.setText("Hello World!");
-    }
-    
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        castellonImage.setOpacity(1.0);
-        castellonImage.setImage(new Image ("C:\\Users\\crist\\Desktop\\ipc\\entregable2\\ipc2\\Entregable2\\res/castellon.png"));
+        
     }    
 
     @FXML
     private void unfocusCst(MouseEvent event) {
-        //castellonImage.setOpacity(0.75);
+        castellonImage.setOpacity(0.75);
     }
 
     @FXML
     private void focusCst(MouseEvent event) {
-        //castellonImage.setOpacity(1);
+        castellonImage.setOpacity(1);
     }
 
     @FXML
     private void unfocusVlc(MouseEvent event) {
+        valenciaImage.setOpacity(0.75);
     }
 
     @FXML
     private void focusVlc(MouseEvent event) {
+        valenciaImage.setOpacity(1);
     }
 
     @FXML
     private void unfocusAlc(MouseEvent event) {
+        alicanteImage.setOpacity(0.75);
     }
 
     @FXML
     private void focusAlc(MouseEvent event) {
+        alicanteImage.setOpacity(1);
     }
     
 }

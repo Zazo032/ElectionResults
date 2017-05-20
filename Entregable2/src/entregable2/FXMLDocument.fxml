@@ -89,19 +89,19 @@
             </VBox>
             <VBox prefHeight="200.0" prefWidth="100.0">
                <children>
-                  <ImageView id="Castellon" fx:id="castellonImage" fitHeight="150.0" fitWidth="200.0" onMouseEntered="#focusCst" onMouseExited="#unfocusCst" opacity="0.75" pickOnBounds="true" preserveRatio="true" translateX="18.0">
+                  <ImageView fx:id="castellonImage" fitHeight="150.0" fitWidth="200.0" onMouseEntered="#focusCst" onMouseExited="#unfocusCst" opacity="0.75" pickOnBounds="true" preserveRatio="true" translateX="18.0" translateZ="1.0">
                      <image>
-                        <Image url="@../../res/castellon.png" />
+                        <Image url="@castellon.png" />
                      </image>
                   </ImageView>
-                  <ImageView id="Valencia" fx:id="valenciaImage" fitHeight="150.0" fitWidth="200.0" onMouseEntered="#focusVlc" onMouseExited="#unfocusVlc" opacity="0.75" pickOnBounds="true" preserveRatio="true" translateX="-25.0" translateY="-50.0">
+                  <ImageView fx:id="valenciaImage" fitHeight="150.0" fitWidth="200.0" onMouseEntered="#focusVlc" onMouseExited="#unfocusVlc" opacity="0.75" pickOnBounds="true" preserveRatio="true" translateX="-25.0" translateY="-50.0">
                      <image>
-                        <Image url="@../../res/valencia.png" />
+                        <Image url="@valencia.png" />
                      </image>
                   </ImageView>
-                  <ImageView id="Alicante" fx:id="alicanteImage" fitHeight="150.0" fitWidth="200.0" onMouseEntered="#focusAlc" onMouseExited="#unfocusAlc" opacity="0.75" pickOnBounds="true" preserveRatio="true" rotate="-3.0" scaleX="0.8" scaleY="0.8" translateX="-10.0" translateY="-91.0">
+                  <ImageView fx:id="alicanteImage" fitHeight="150.0" fitWidth="200.0" onMouseEntered="#focusAlc" onMouseExited="#unfocusAlc" opacity="0.75" pickOnBounds="true" preserveRatio="true" rotate="-10.0" scaleX="0.8" scaleY="0.8" translateY="-90.0">
                      <image>
-                        <Image url="@../../res/alicante.png" />
+                        <Image url="@alicante.png" />
                      </image>
                   </ImageView>
                   <Label text="Comarca:">
