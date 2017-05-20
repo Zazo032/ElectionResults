@@ -5,6 +5,7 @@
  */
 package entregable2;
 
+import electionresults.persistence.io.DataAccessLayer;
 import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -47,14 +48,19 @@ public class FXMLDocumentController implements Initializable {
     @FXML
     private ImageView alicanteImage;
     
+    double cstDefOp, vlcDefOp, alcDefOp;
+    
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        cstDefOp = 0.75;
+        vlcDefOp = 0.75;
+        alcDefOp = 0.75;
         
     }    
 
     @FXML
     private void unfocusCst(MouseEvent event) {
-        castellonImage.setOpacity(0.75);
+        castellonImage.setOpacity(cstDefOp);
     }
 
     @FXML
@@ -64,7 +70,7 @@ public class FXMLDocumentController implements Initializable {
 
     @FXML
     private void unfocusVlc(MouseEvent event) {
-        valenciaImage.setOpacity(0.75);
+        valenciaImage.setOpacity(vlcDefOp);
     }
 
     @FXML
@@ -74,12 +80,48 @@ public class FXMLDocumentController implements Initializable {
 
     @FXML
     private void unfocusAlc(MouseEvent event) {
-        alicanteImage.setOpacity(0.75);
+        alicanteImage.setOpacity(alcDefOp);
     }
 
     @FXML
     private void focusAlc(MouseEvent event) {
         alicanteImage.setOpacity(1);
+    }
+
+    @FXML
+    private void selectCst(MouseEvent event) {
+        cstDefOp = 1;
+        castellonImage.setOpacity(cstDefOp);
+        vlcDefOp = 0.75;
+        valenciaImage.setOpacity(vlcDefOp);
+        alcDefOp = 0.75;
+        alicanteImage.setOpacity(alcDefOp);
+        seatsDisChart.setTitle("Seats distribution for Castellon");
+        partyVotesChart.setTitle("Party votes in Castellon");
+    }
+
+    @FXML
+    private void selectVlc(MouseEvent event) {
+        cstDefOp = 0.75;
+        castellonImage.setOpacity(cstDefOp);
+        vlcDefOp = 1;
+        valenciaImage.setOpacity(vlcDefOp);
+        alcDefOp = 0.75;
+        alicanteImage.setOpacity(alcDefOp);
+        seatsDisChart.setTitle("Seats distribution for Valencia");
+        partyVotesChart.setTitle("Party votes in Valencia");
+    }
+
+    @FXML
+    private void selectAlc(MouseEvent event) {
+        cstDefOp = 0.75;
+        castellonImage.setOpacity(cstDefOp);
+        vlcDefOp = 0.75;
+        valenciaImage.setOpacity(vlcDefOp);
+        alcDefOp = 1;
+        alicanteImage.setOpacity(alcDefOp);
+        seatsDisChart.setTitle("Seats distribution for Alicante");
+        partyVotesChart.setTitle("Party votes in Alicante");
     }
     
 }
