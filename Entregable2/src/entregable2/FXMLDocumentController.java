@@ -8,7 +8,10 @@ package entregable2;
 import electionresults.persistence.io.DataAccessLayer;
 import java.io.File;
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -16,11 +19,13 @@ import javafx.scene.chart.BarChart;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.StackedBarChart;
+import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 
 /**
  *
@@ -49,13 +54,23 @@ public class FXMLDocumentController implements Initializable {
     private ImageView alicanteImage;
     
     double cstDefOp, vlcDefOp, alcDefOp;
+    @FXML
+    private HBox yearContainer;
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         cstDefOp = 0.75;
         vlcDefOp = 0.75;
         alcDefOp = 0.75;
-        
+        List<Integer> years = DataAccessLayer.getElectionYears();
+        ObservableList<Integer> yearsList = FXCollections.observableList(years);
+        for (Integer year : yearsList) {
+            System.out.println(year);
+            Button b = new Button("" + year);
+            b.setStyle("-fx-background-color:#ffffff;-fx-border-color:#3f51b5;-fx-border-width:2px;-fx-border-radius:2px;");
+            yearContainer.getChildren().add(b);
+        }
+        //comarcaSelector.setItems(yearsList);
     }    
 
     @FXML

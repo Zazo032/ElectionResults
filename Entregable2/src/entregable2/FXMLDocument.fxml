@@ -32,13 +32,16 @@
       </HBox>
       <HBox>
          <children>
-            <VBox>
+            <VBox fx:id="anyoSelector">
                <children>
-                  <HBox prefHeight="100.0" prefWidth="200.0" />
+                  <HBox fx:id="yearContainer" alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="16.0">
+                     <padding>
+                        <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+                     </padding></HBox>
                   <HBox alignment="CENTER">
                      <children>
-                        <PieChart fx:id="seatsDisChart" title="Seats distribution for %%%%%%%%%%%%" />
-                        <BarChart fx:id="partyVotesChart" title="Party votes in %%%%%%%%%">
+                        <PieChart fx:id="seatsDisChart" title="Seats distribution for" />
+                        <BarChart fx:id="partyVotesChart" title="Party votes in">
                           <xAxis>
                             <CategoryAxis side="BOTTOM" />
                           </xAxis>
