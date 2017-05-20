@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.Cursor?>
 <?import javafx.scene.chart.BarChart?>
 <?import javafx.scene.chart.CategoryAxis?>
 <?import javafx.scene.chart.LineChart?>
@@ -89,10 +90,13 @@
             </VBox>
             <VBox prefHeight="200.0" prefWidth="100.0">
                <children>
-                  <ImageView fx:id="castellonImage" fitHeight="150.0" fitWidth="200.0" onMouseEntered="#focusCst" onMouseExited="#unfocusCst" opacity="0.75" pickOnBounds="true" preserveRatio="true" translateX="18.0" translateZ="1.0">
+                  <ImageView fx:id="castellonImage" blendMode="SRC_ATOP" fitHeight="150.0" fitWidth="200.0" onMouseEntered="#focusCst" onMouseExited="#unfocusCst" opacity="0.75" pickOnBounds="true" preserveRatio="true" translateX="18.0" translateZ="1.0">
                      <image>
                         <Image url="@castellon.png" />
                      </image>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
                   </ImageView>
                   <ImageView fx:id="valenciaImage" fitHeight="150.0" fitWidth="200.0" onMouseEntered="#focusVlc" onMouseExited="#unfocusVlc" opacity="0.75" pickOnBounds="true" preserveRatio="true" translateX="-25.0" translateY="-50.0">
                      <image>
