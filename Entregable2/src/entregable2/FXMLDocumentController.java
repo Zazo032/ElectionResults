@@ -28,6 +28,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 
 /**
  *
@@ -35,11 +36,10 @@ import javafx.scene.layout.HBox;
  */
 public class FXMLDocumentController implements Initializable {
     
-    private Label label;
     @FXML
     private PieChart seatsDisChart;
     @FXML
-    private BarChart<?, ?> partyVotesChart;
+    private BarChart<String, Number> partyVotesChart;
     @FXML
     private BarChart<?, ?> participationChart;
     @FXML
@@ -47,7 +47,7 @@ public class FXMLDocumentController implements Initializable {
     @FXML
     private LineChart<?, ?> votesChart;
     @FXML
-    private ChoiceBox<?> comarcaSelector;
+    private ChoiceBox<String> comarcaSelector;
     @FXML
     private ImageView castellonImage;
     @FXML
@@ -60,6 +60,14 @@ public class FXMLDocumentController implements Initializable {
     double cstDefOp, vlcDefOp, alcDefOp;
     int yearToShow = 0;
     String comarcaToShow, provinceToShow;
+    @FXML
+    private VBox anyoSelector;
+    @FXML
+    private Label communityLabel;
+    @FXML
+    private Label yearLabel;
+    @FXML
+    private Label comarcaLabel;
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -73,10 +81,12 @@ public class FXMLDocumentController implements Initializable {
             b.setStyle("-fx-background-color:#ffffff;-fx-border-color:#3f51b5;-fx-border-width:2px;-fx-border-radius:2px;");
             b.setOnAction((ActionEvent event) -> {
                 yearToShow = Integer.parseInt(b.getText());
+                yearLabel.setText(yearToShow + "");
                 updateCharts(yearToShow,provinceToShow,comarcaToShow);
             });
             yearContainer.getChildren().add(b);
         }
+        
     }
 
     private void updateCharts(int y, String p, String c){
@@ -131,6 +141,7 @@ public class FXMLDocumentController implements Initializable {
         alcDefOp = 0.75;
         alicanteImage.setOpacity(alcDefOp);
         provinceToShow = "Castellon";
+        communityLabel.setText(provinceToShow);
         seatsDisChart.setTitle("Seats distribution for Castellon");
         partyVotesChart.setTitle("Party votes in Castellon");
         updateCharts(yearToShow, provinceToShow, comarcaToShow);
@@ -145,6 +156,7 @@ public class FXMLDocumentController implements Initializable {
         alcDefOp = 0.75;
         alicanteImage.setOpacity(alcDefOp);
         provinceToShow = "Valencia";
+        communityLabel.setText(provinceToShow);
         seatsDisChart.setTitle("Seats distribution for Valencia");
         partyVotesChart.setTitle("Party votes in Valencia");
         updateCharts(yearToShow, provinceToShow, comarcaToShow);
@@ -159,6 +171,7 @@ public class FXMLDocumentController implements Initializable {
         alcDefOp = 1;
         alicanteImage.setOpacity(alcDefOp);
         provinceToShow = "Alicante";
+        communityLabel.setText(provinceToShow);
         seatsDisChart.setTitle("Seats distribution for Alicante");
         partyVotesChart.setTitle("Party votes in Alicante");
         updateCharts(yearToShow, provinceToShow, comarcaToShow);

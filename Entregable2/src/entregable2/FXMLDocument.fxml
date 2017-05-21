@@ -120,6 +120,9 @@
                         <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                      </VBox.margin>
                   </ChoiceBox>
+                  <Label fx:id="communityLabel" />
+                  <Label fx:id="yearLabel" />
+                  <Label fx:id="comarcaLabel" />
                </children>
                <padding>
                   <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
