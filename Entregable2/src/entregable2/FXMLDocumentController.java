@@ -5,15 +5,16 @@
  */
 package entregable2;
 
+import electionresults.model.PartyResults;
+import electionresults.model.ProvinceInfo;
 import electionresults.persistence.io.DataAccessLayer;
-import java.io.File;
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.chart.BarChart;
@@ -24,7 +25,6 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
@@ -59,7 +59,9 @@ public class FXMLDocumentController implements Initializable {
     
     double cstDefOp, vlcDefOp, alcDefOp;
     int yearToShow = 0;
-    String comarcaToShow, provinceToShow;
+    String provinceToShow;
+    String comarcaToShow;
+    
     @FXML
     private VBox anyoSelector;
     @FXML
@@ -92,14 +94,26 @@ public class FXMLDocumentController implements Initializable {
     private void updateCharts(int y, String p, String c){
         if(yearToShow != 0 && provinceToShow != null) {
             ObservableList<PieChart.Data> pieData = FXCollections.observableArrayList();
-            seatsDisChart.setData(null);
+            //seatsDisChart.setData(null);
             ObservableList<XYChart.Data<String,Number>> barData = FXCollections.observableArrayList();
             partyVotesChart.setData(null);
             // Actualiza gráficas
-            System.out.println("Año: " + yearToShow + "\nProvincia: " + provinceToShow);
+            System.out.println("Año: " + yearToShow + " y Provincia: " + provinceToShow);
+            updateSeatsDisChart(yearToShow, provinceToShow);
         } else {
             System.out.println("Faltan cosas");
         }
+    }
+    
+    private void updateSeatsDisChart(int y, String p){
+        int talla = DataAccessLayer.getElectionResults(y).getProvinceResults(p).getPartyResultsSorted().size();
+        ObservableList<PieChart.Data> obs = FXCollections.observableArrayList();
+        for (int i = 0; i < talla; i++) {
+           PartyResults aux = DataAccessLayer.getElectionResults(y).getProvinceResults(p).getPartyResultsSorted().get(i);
+           PieChart.Data d = new PieChart.Data(aux.getParty() + " (" + aux.getSeats() + ")", aux.getSeats());
+           obs.add(d);
+        }
+        seatsDisChart.setData(obs);
     }
     
     @FXML
@@ -140,10 +154,10 @@ public class FXMLDocumentController implements Initializable {
         valenciaImage.setOpacity(vlcDefOp);
         alcDefOp = 0.75;
         alicanteImage.setOpacity(alcDefOp);
-        provinceToShow = "Castellon";
+        provinceToShow = "Castellón";
         communityLabel.setText(provinceToShow);
-        seatsDisChart.setTitle("Seats distribution for Castellon");
-        partyVotesChart.setTitle("Party votes in Castellon");
+        seatsDisChart.setTitle("Seats distribution for " + provinceToShow);
+        partyVotesChart.setTitle("Party votes in " + provinceToShow);
         updateCharts(yearToShow, provinceToShow, comarcaToShow);
     }
 
@@ -157,8 +171,8 @@ public class FXMLDocumentController implements Initializable {
         alicanteImage.setOpacity(alcDefOp);
         provinceToShow = "Valencia";
         communityLabel.setText(provinceToShow);
-        seatsDisChart.setTitle("Seats distribution for Valencia");
-        partyVotesChart.setTitle("Party votes in Valencia");
+        seatsDisChart.setTitle("Seats distribution for " + provinceToShow);
+        partyVotesChart.setTitle("Party votes in " + provinceToShow);
         updateCharts(yearToShow, provinceToShow, comarcaToShow);
     }
 
@@ -172,8 +186,8 @@ public class FXMLDocumentController implements Initializable {
         alicanteImage.setOpacity(alcDefOp);
         provinceToShow = "Alicante";
         communityLabel.setText(provinceToShow);
-        seatsDisChart.setTitle("Seats distribution for Alicante");
-        partyVotesChart.setTitle("Party votes in Alicante");
+        seatsDisChart.setTitle("Seats distribution for " + provinceToShow);
+        partyVotesChart.setTitle("Party votes in " + provinceToShow);
         updateCharts(yearToShow, provinceToShow, comarcaToShow);
     }
     
