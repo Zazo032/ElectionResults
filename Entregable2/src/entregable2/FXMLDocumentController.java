@@ -6,25 +6,23 @@
 package entregable2;
 
 import electionresults.model.PartyResults;
-import electionresults.model.ProvinceInfo;
 import electionresults.persistence.io.DataAccessLayer;
 import java.net.URL;
 import java.util.List;
-import java.util.Map;
 import java.util.ResourceBundle;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.chart.BarChart;
-import javafx.scene.chart.LineChart;
 import javafx.scene.chart.PieChart;
-import javafx.scene.chart.StackedBarChart;
-import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
@@ -43,10 +41,6 @@ public class FXMLDocumentController implements Initializable {
     @FXML
     private BarChart<?, ?> participationChart;
     @FXML
-    private StackedBarChart<?, ?> seatsChart;
-    @FXML
-    private LineChart<?, ?> votesChart;
-    @FXML
     private ChoiceBox<String> comarcaSelector;
     @FXML
     private ImageView castellonImage;
@@ -61,6 +55,7 @@ public class FXMLDocumentController implements Initializable {
     int yearToShow = 0;
     String provinceToShow;
     String comarcaToShow;
+    double filterToShow;
     
     @FXML
     private VBox anyoSelector;
@@ -70,6 +65,8 @@ public class FXMLDocumentController implements Initializable {
     private Label yearLabel;
     @FXML
     private Label comarcaLabel;
+    @FXML
+    private Slider sliderFilter;
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -84,36 +81,56 @@ public class FXMLDocumentController implements Initializable {
             b.setOnAction((ActionEvent event) -> {
                 yearToShow = Integer.parseInt(b.getText());
                 yearLabel.setText(yearToShow + "");
-                updateCharts(yearToShow,provinceToShow,comarcaToShow);
+                updateCharts();
             });
             yearContainer.getChildren().add(b);
         }
-        
+        sliderFilter.valueProperty().addListener(new ChangeListener<Number>() {
+            public void changed(ObservableValue<? extends Number> ov,
+                Number old_val, Number new_val) {
+                    double aux = sliderFilter.valueProperty().getValue();
+                    if(aux % 0.5 == 0){
+                        filterToShow = (Double) new_val;
+                        System.out.println(filterToShow);
+                        updateSeatsDisChart();
+                    }
+            }
+        });
+        yearToShow = 2015;
+        updateCharts();
     }
 
-    private void updateCharts(int y, String p, String c){
-        if(yearToShow != 0 && provinceToShow != null) {
-            ObservableList<PieChart.Data> pieData = FXCollections.observableArrayList();
-            //seatsDisChart.setData(null);
-            ObservableList<XYChart.Data<String,Number>> barData = FXCollections.observableArrayList();
-            partyVotesChart.setData(null);
-            // Actualiza gráficas
-            System.out.println("Año: " + yearToShow + " y Provincia: " + provinceToShow);
-            updateSeatsDisChart(yearToShow, provinceToShow);
-        } else {
-            System.out.println("Faltan cosas");
-        }
+    private void updateCharts(){
+        updateSeatsDisChart();
     }
     
-    private void updateSeatsDisChart(int y, String p){
-        int talla = DataAccessLayer.getElectionResults(y).getProvinceResults(p).getPartyResultsSorted().size();
-        ObservableList<PieChart.Data> obs = FXCollections.observableArrayList();
-        for (int i = 0; i < talla; i++) {
-           PartyResults aux = DataAccessLayer.getElectionResults(y).getProvinceResults(p).getPartyResultsSorted().get(i);
-           PieChart.Data d = new PieChart.Data(aux.getParty() + " (" + aux.getSeats() + ")", aux.getSeats());
-           obs.add(d);
+    private void updateSeatsDisChart(){
+        if(provinceToShow != null){
+            int talla = DataAccessLayer.getElectionResults(yearToShow).getProvinceResults(provinceToShow).getPartyResultsSorted().size();
+            ObservableList<PieChart.Data> obs = FXCollections.observableArrayList();
+            for (int i = 0; i < talla; i++) {
+               PartyResults aux = DataAccessLayer.getElectionResults(yearToShow).getProvinceResults(provinceToShow).getPartyResultsSorted().get(i);
+               if(aux.getPercentage() > filterToShow ){
+                    PieChart.Data d = new PieChart.Data(aux.getParty() + " (" + aux.getSeats() + ")", aux.getSeats());
+                    System.out.println(aux.getParty() + " " + aux.getPercentage());
+                    obs.add(d);
+               }
+            }
+            seatsDisChart.setData(obs);
+        } else {
+            ObservableList<PieChart.Data> cobs = FXCollections.observableArrayList();
+        for (int i = 0; i < DataAccessLayer.getElectionResults(yearToShow).getGlobalResults().getPartyResultsSorted().size(); i++) {
+            PartyResults aux = DataAccessLayer.getElectionResults(yearToShow).getGlobalResults().getPartyResultsSorted().get(i);
+            if(aux.getPercentage()*100 > filterToShow){
+                PieChart.Data d = new PieChart.Data(
+                    aux.getParty() + " (" + aux.getSeats() + ")",
+                    aux.getSeats()
+                );
+                cobs.add(d);
+            }
         }
-        seatsDisChart.setData(obs);
+        seatsDisChart.setData(cobs);
+        }
     }
     
     @FXML
@@ -158,7 +175,7 @@ public class FXMLDocumentController implements Initializable {
         communityLabel.setText(provinceToShow);
         seatsDisChart.setTitle("Seats distribution for " + provinceToShow);
         partyVotesChart.setTitle("Party votes in " + provinceToShow);
-        updateCharts(yearToShow, provinceToShow, comarcaToShow);
+        updateCharts();
     }
 
     @FXML
@@ -173,7 +190,7 @@ public class FXMLDocumentController implements Initializable {
         communityLabel.setText(provinceToShow);
         seatsDisChart.setTitle("Seats distribution for " + provinceToShow);
         partyVotesChart.setTitle("Party votes in " + provinceToShow);
-        updateCharts(yearToShow, provinceToShow, comarcaToShow);
+        updateCharts();
     }
 
     @FXML
@@ -188,7 +205,7 @@ public class FXMLDocumentController implements Initializable {
         communityLabel.setText(provinceToShow);
         seatsDisChart.setTitle("Seats distribution for " + provinceToShow);
         partyVotesChart.setTitle("Party votes in " + provinceToShow);
-        updateCharts(yearToShow, provinceToShow, comarcaToShow);
+        updateCharts();
     }
     
 }

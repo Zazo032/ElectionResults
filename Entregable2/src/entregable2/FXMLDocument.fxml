@@ -3,20 +3,19 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.chart.BarChart?>
 <?import javafx.scene.chart.CategoryAxis?>
-<?import javafx.scene.chart.LineChart?>
 <?import javafx.scene.chart.NumberAxis?>
 <?import javafx.scene.chart.PieChart?>
-<?import javafx.scene.chart.StackedBarChart?>
 <?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Slider?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="760.0" prefWidth="920.0" style="-fx-background-color: #ffffff;" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="entregable2.FXMLDocumentController">
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="780.0" prefWidth="960.0" style="-fx-background-color: #ffffff;" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="entregable2.FXMLDocumentController">
    <children>
       <HBox alignment="CENTER" prefHeight="80.0" style="-fx-background-color: #3f51b5;">
          <children>
@@ -34,13 +33,11 @@
          <children>
             <VBox fx:id="anyoSelector">
                <children>
-                  <HBox fx:id="yearContainer" alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="16.0">
-                     <padding>
-                        <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
-                     </padding></HBox>
+                  <HBox fx:id="yearContainer" alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="12.0" />
                   <HBox alignment="CENTER">
                      <children>
-                        <PieChart fx:id="seatsDisChart" title="Seats distribution for" />
+                        <Slider fx:id="sliderFilter" blockIncrement="0.5" majorTickUnit="0.5" max="5.0" minorTickCount="0" orientation="VERTICAL" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="2.5" />
+                        <PieChart fx:id="seatsDisChart" legendVisible="false" title="Seats distribution for" />
                         <BarChart fx:id="partyVotesChart" title="Party votes in">
                           <xAxis>
                             <CategoryAxis side="BOTTOM" />
@@ -50,9 +47,15 @@
                           </yAxis>
                         </BarChart>
                      </children>
+                     <VBox.margin>
+                        <Insets />
+                     </VBox.margin>
+                     <padding>
+                        <Insets bottom="12.0" left="12.0" right="12.0" top="12.0" />
+                     </padding>
                   </HBox>
                   <Separator prefWidth="200.0" />
-                  <HBox alignment="CENTER">
+                  <HBox alignment="CENTER_LEFT">
                      <children>
                         <BarChart fx:id="participationChart" title="Participation (%)">
                           <xAxis>
@@ -64,31 +67,10 @@
                         </BarChart>
                      </children>
                   </HBox>
-                  <Separator prefWidth="200.0" />
-                  <HBox alignment="CENTER">
-                     <children>
-                        <StackedBarChart fx:id="seatsChart" title="Seats">
-                          <xAxis>
-                            <CategoryAxis side="BOTTOM" />
-                          </xAxis>
-                          <yAxis>
-                            <NumberAxis side="LEFT" />
-                          </yAxis>
-                        </StackedBarChart>
-                        <LineChart fx:id="votesChart" title="Votes">
-                          <xAxis>
-                            <CategoryAxis side="BOTTOM" />
-                          </xAxis>
-                          <yAxis>
-                            <NumberAxis side="LEFT" />
-                          </yAxis>
-                        </LineChart>
-                     </children>
-                  </HBox>
                </children>
-               <padding>
+               <HBox.margin>
                   <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
-               </padding>
+               </HBox.margin>
             </VBox>
             <VBox prefHeight="200.0" prefWidth="100.0">
                <children>
@@ -120,9 +102,9 @@
                         <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                      </VBox.margin>
                   </ChoiceBox>
-                  <Label fx:id="communityLabel" />
-                  <Label fx:id="yearLabel" />
                   <Label fx:id="comarcaLabel" />
+                  <Label fx:id="communityLabel" text="Comunidad Valenciana" />
+                  <Label fx:id="yearLabel" text="2015" />
                </children>
                <padding>
                   <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
