@@ -9,6 +9,7 @@ import electionresults.model.PartyResults;
 import electionresults.persistence.io.DataAccessLayer;
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -97,11 +98,24 @@ public class FXMLDocumentController implements Initializable {
             }
         });
         yearToShow = 2015;
+        updateComarcas();
         updateCharts();
     }
 
     private void updateCharts(){
         updateSeatsDisChart();
+    }
+    
+    private void updateComarcas(){
+        Map<String, String> m = DataAccessLayer.getElectionResults(yearToShow).getRegionProvinces();
+        ObservableList<String> clist = FXCollections.observableArrayList();
+        for (Map.Entry<String, String> entry : m.entrySet()) {
+            if(entry.getValue().equals(provinceToShow)){
+                System.out.println(entry.getKey() + entry.getValue());
+                clist.add(entry.getKey());
+            }
+        }
+        comarcaSelector.setItems(clist);
     }
     
     private void updateSeatsDisChart(){
@@ -112,7 +126,6 @@ public class FXMLDocumentController implements Initializable {
                PartyResults aux = DataAccessLayer.getElectionResults(yearToShow).getProvinceResults(provinceToShow).getPartyResultsSorted().get(i);
                if(aux.getPercentage() > filterToShow ){
                     PieChart.Data d = new PieChart.Data(aux.getParty() + " (" + aux.getSeats() + ")", aux.getSeats());
-                    System.out.println(aux.getParty() + " " + aux.getPercentage());
                     obs.add(d);
                }
             }
@@ -175,6 +188,7 @@ public class FXMLDocumentController implements Initializable {
         communityLabel.setText(provinceToShow);
         seatsDisChart.setTitle("Seats distribution for " + provinceToShow);
         partyVotesChart.setTitle("Party votes in " + provinceToShow);
+        updateComarcas();
         updateCharts();
     }
 
@@ -190,6 +204,7 @@ public class FXMLDocumentController implements Initializable {
         communityLabel.setText(provinceToShow);
         seatsDisChart.setTitle("Seats distribution for " + provinceToShow);
         partyVotesChart.setTitle("Party votes in " + provinceToShow);
+        updateComarcas();
         updateCharts();
     }
 
@@ -205,6 +220,7 @@ public class FXMLDocumentController implements Initializable {
         communityLabel.setText(provinceToShow);
         seatsDisChart.setTitle("Seats distribution for " + provinceToShow);
         partyVotesChart.setTitle("Party votes in " + provinceToShow);
+        updateComarcas();
         updateCharts();
     }
     

@@ -25,6 +25,7 @@ public class Entregable2 extends Application {
         
         stage.setScene(scene);
         stage.show();
+        stage.setTitle("RESULTADOS ELECTORALES");
     }
 
     /**
