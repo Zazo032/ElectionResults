@@ -31,14 +31,14 @@
       </HBox>
       <HBox>
          <children>
-            <VBox fx:id="anyoSelector">
+            <VBox HBox.hgrow="ALWAYS">
                <children>
-                  <HBox fx:id="yearContainer" alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="12.0" />
+                  <HBox fx:id="yearContainer" alignment="CENTER" spacing="12.0" />
                   <HBox alignment="CENTER">
                      <children>
                         <Slider fx:id="sliderFilter" blockIncrement="0.5" majorTickUnit="0.5" max="5.0" minorTickCount="0" orientation="VERTICAL" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="2.5" />
-                        <PieChart fx:id="seatsDisChart" legendVisible="false" title="Seats distribution for" />
-                        <BarChart fx:id="partyVotesChart" title="Party votes in">
+                        <PieChart fx:id="seatsDisChart" legendVisible="false" title="Seats distribution for" HBox.hgrow="SOMETIMES" />
+                        <BarChart fx:id="partyVotesChart" title="Party votes in" HBox.hgrow="SOMETIMES">
                           <xAxis>
                             <CategoryAxis side="BOTTOM" />
                           </xAxis>
@@ -55,9 +55,9 @@
                      </padding>
                   </HBox>
                   <Separator prefWidth="200.0" />
-                  <HBox alignment="CENTER_LEFT">
+                  <HBox alignment="CENTER">
                      <children>
-                        <BarChart fx:id="participationChart" title="Participation (%)">
+                        <BarChart fx:id="participationChart" title="Participation (%)" HBox.hgrow="SOMETIMES">
                           <xAxis>
                             <CategoryAxis side="BOTTOM" />
                           </xAxis>

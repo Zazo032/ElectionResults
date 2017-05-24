@@ -60,8 +60,6 @@ public class FXMLDocumentController implements Initializable {
     double filterToShow;
 
     @FXML
-    private VBox anyoSelector;
-    @FXML
     private Label communityLabel;
     @FXML
     private Label yearLabel;
@@ -81,14 +79,15 @@ public class FXMLDocumentController implements Initializable {
         updateCharts();
     }
 
+    // Lanzadera para actualizar las gráficas
     private void updateCharts() {
         updateSeatsDisChart();
     }
 
+    // Actualiza el ChoiceBox de comarcas
     private void updateComarcas() {
         if (provinceToShow != null) {
             comarcaSelector.setDisable(false);
-            System.out.println("0");
             Map<String, String> m = DataAccessLayer.getElectionResults(yearToShow).getRegionProvinces();
             ObservableList<String> clist = FXCollections.observableArrayList();
             comarcaSelector.setItems(clist);
@@ -107,6 +106,7 @@ public class FXMLDocumentController implements Initializable {
         }
     }
 
+    // Actualiza el PieChart (Seats Distribution)
     private void updateSeatsDisChart() {
         if (provinceToShow != null) {
             int talla = DataAccessLayer.getElectionResults(yearToShow).getProvinceResults(provinceToShow).getPartyResultsSorted().size();
@@ -135,6 +135,7 @@ public class FXMLDocumentController implements Initializable {
         }
     }
 
+    // Listener del ChoiceBox de comarcas
     private void initComarcas() {
         comarcaSelector.getSelectionModel().selectedIndexProperty().addListener((ObservableValue<? extends Number> observableValue, Number number, Number number2) -> {
             try {
@@ -144,10 +145,12 @@ public class FXMLDocumentController implements Initializable {
                 comarcaToShow = cChanged;
                 System.out.println(comarcaToShow);
                 updateCharts();
-            } catch (Exception e) {}
+            } catch (Exception e) {
+            }
         });
     }
 
+    // Iniciar filtro (slider)
     private void initSlider() {
         sliderFilter.valueProperty().addListener(new ChangeListener<Number>() {
             public void changed(ObservableValue<? extends Number> ov,
@@ -161,7 +164,7 @@ public class FXMLDocumentController implements Initializable {
         });
     }
 
-    @FXML
+    // Crear botones de años
     private void initYears() {
         List<Integer> years = DataAccessLayer.getElectionYears();
         ObservableList<Integer> yearsList = FXCollections.observableList(years);
@@ -178,7 +181,7 @@ public class FXMLDocumentController implements Initializable {
         yearToShow = 2015;
     }
 
-    @FXML // Iniciar comportamiento del mapa
+    // Iniciar comportamiento del mapa
     private void initImages() {
         // Default opacity 80%
         cstDefOp = 0.8;
@@ -317,5 +320,4 @@ public class FXMLDocumentController implements Initializable {
             event.consume();
         });
     }
-
 }
