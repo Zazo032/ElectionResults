@@ -74,17 +74,17 @@
             </VBox>
             <VBox prefHeight="200.0" prefWidth="100.0">
                <children>
-                  <ImageView fx:id="castellonImage" fitHeight="150.0" fitWidth="200.0" onMouseClicked="#selectCst" onMouseEntered="#focusCst" onMouseExited="#unfocusCst" opacity="0.75" pickOnBounds="true" preserveRatio="true" translateX="18.0" translateZ="1.0">
+                  <ImageView fx:id="castellonImage" fitHeight="150.0" fitWidth="200.0" opacity="0.75" pickOnBounds="true" preserveRatio="true" translateX="18.0" translateZ="1.0">
                      <image>
                         <Image url="@castellon.png" />
                      </image>
                   </ImageView>
-                  <ImageView fx:id="valenciaImage" fitHeight="150.0" fitWidth="200.0" onMouseClicked="#selectVlc" onMouseEntered="#focusVlc" onMouseExited="#unfocusVlc" opacity="0.75" pickOnBounds="true" preserveRatio="true" translateX="-25.0" translateY="-50.0">
+                  <ImageView fx:id="valenciaImage" fitHeight="150.0" fitWidth="200.0" opacity="0.75" pickOnBounds="true" preserveRatio="true" translateX="-25.0" translateY="-50.0">
                      <image>
                         <Image url="@valencia.png" />
                      </image>
                   </ImageView>
-                  <ImageView fx:id="alicanteImage" fitHeight="150.0" fitWidth="200.0" onMouseClicked="#selectAlc" onMouseEntered="#focusAlc" onMouseExited="#unfocusAlc" opacity="0.75" pickOnBounds="true" preserveRatio="true" rotate="-10.0" scaleX="0.8" scaleY="0.8" translateY="-90.0">
+                  <ImageView fx:id="alicanteImage" fitHeight="150.0" fitWidth="200.0" opacity="0.75" pickOnBounds="true" preserveRatio="true" rotate="-10.0" scaleX="0.8" scaleY="0.8" translateY="-90.0">
                      <image>
                         <Image url="@alicante.png" />
                      </image>

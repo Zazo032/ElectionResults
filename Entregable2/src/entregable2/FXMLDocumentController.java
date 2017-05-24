@@ -16,6 +16,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.chart.BarChart;
@@ -34,7 +35,7 @@ import javafx.scene.layout.VBox;
  * @author cristianzazo
  */
 public class FXMLDocumentController implements Initializable {
-    
+
     @FXML
     private PieChart seatsDisChart;
     @FXML
@@ -51,13 +52,13 @@ public class FXMLDocumentController implements Initializable {
     private ImageView alicanteImage;
     @FXML
     private HBox yearContainer;
-    
+
     double cstDefOp, vlcDefOp, alcDefOp;
     int yearToShow = 0;
     String provinceToShow;
     String comarcaToShow;
     double filterToShow;
-    
+
     @FXML
     private VBox anyoSelector;
     @FXML
@@ -68,12 +69,100 @@ public class FXMLDocumentController implements Initializable {
     private Label comarcaLabel;
     @FXML
     private Slider sliderFilter;
-    
+
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        cstDefOp = 0.75;
-        vlcDefOp = 0.75;
-        alcDefOp = 0.75;
+        initImages();
+        initYears();
+        initSlider();
+        initComarcas();
+
+        updateComarcas();
+        updateCharts();
+    }
+
+    private void updateCharts() {
+        updateSeatsDisChart();
+    }
+
+    private void updateComarcas() {
+        if (provinceToShow != null) {
+            comarcaSelector.setDisable(false);
+            System.out.println("0");
+            Map<String, String> m = DataAccessLayer.getElectionResults(yearToShow).getRegionProvinces();
+            ObservableList<String> clist = FXCollections.observableArrayList();
+            comarcaSelector.setItems(clist);
+            for (Map.Entry<String, String> entry : m.entrySet()) {
+                if (entry.getValue().equals(provinceToShow)) {
+                    clist.add(entry.getKey());
+                }
+            }
+            comarcaSelector.setItems(clist);
+        } else {
+            comarcaSelector.setDisable(true);
+            comarcaToShow = null;
+            comarcaLabel.setText("");
+            ObservableList<String> clist = FXCollections.observableArrayList();
+            comarcaSelector.setItems(clist);
+        }
+    }
+
+    private void updateSeatsDisChart() {
+        if (provinceToShow != null) {
+            int talla = DataAccessLayer.getElectionResults(yearToShow).getProvinceResults(provinceToShow).getPartyResultsSorted().size();
+            ObservableList<PieChart.Data> obs = FXCollections.observableArrayList();
+            for (int i = 0; i < talla; i++) {
+                PartyResults aux = DataAccessLayer.getElectionResults(yearToShow).getProvinceResults(provinceToShow).getPartyResultsSorted().get(i);
+                if (aux.getPercentage() > filterToShow) {
+                    PieChart.Data d = new PieChart.Data(aux.getParty() + " (" + aux.getSeats() + ")", aux.getSeats());
+                    obs.add(d);
+                }
+            }
+            seatsDisChart.setData(obs);
+        } else {
+            ObservableList<PieChart.Data> cobs = FXCollections.observableArrayList();
+            for (int i = 0; i < DataAccessLayer.getElectionResults(yearToShow).getGlobalResults().getPartyResultsSorted().size(); i++) {
+                PartyResults aux = DataAccessLayer.getElectionResults(yearToShow).getGlobalResults().getPartyResultsSorted().get(i);
+                if (aux.getPercentage() * 100 > filterToShow) {
+                    PieChart.Data d = new PieChart.Data(
+                            aux.getParty() + " (" + aux.getSeats() + ")",
+                            aux.getSeats()
+                    );
+                    cobs.add(d);
+                }
+            }
+            seatsDisChart.setData(cobs);
+        }
+    }
+
+    private void initComarcas() {
+        comarcaSelector.getSelectionModel().selectedIndexProperty().addListener((ObservableValue<? extends Number> observableValue, Number number, Number number2) -> {
+            try {
+                String cChanged = comarcaSelector.getItems().get((Integer) number2);
+                System.out.println(comarcaToShow);
+                comarcaLabel.setText(cChanged);
+                comarcaToShow = cChanged;
+                System.out.println(comarcaToShow);
+                updateCharts();
+            } catch (Exception e) {}
+        });
+    }
+
+    private void initSlider() {
+        sliderFilter.valueProperty().addListener(new ChangeListener<Number>() {
+            public void changed(ObservableValue<? extends Number> ov,
+                    Number old_val, Number new_val) {
+                double aux = sliderFilter.valueProperty().getValue();
+                if (aux % 0.5 == 0) {
+                    filterToShow = (Double) new_val;
+                    updateSeatsDisChart();
+                }
+            }
+        });
+    }
+
+    @FXML
+    private void initYears() {
         List<Integer> years = DataAccessLayer.getElectionYears();
         ObservableList<Integer> yearsList = FXCollections.observableList(years);
         for (Integer year : yearsList) {
@@ -86,142 +175,147 @@ public class FXMLDocumentController implements Initializable {
             });
             yearContainer.getChildren().add(b);
         }
-        sliderFilter.valueProperty().addListener(new ChangeListener<Number>() {
-            public void changed(ObservableValue<? extends Number> ov,
-                Number old_val, Number new_val) {
-                    double aux = sliderFilter.valueProperty().getValue();
-                    if(aux % 0.5 == 0){
-                        filterToShow = (Double) new_val;
-                        System.out.println(filterToShow);
-                        updateSeatsDisChart();
-                    }
-            }
-        });
         yearToShow = 2015;
-        updateComarcas();
-        updateCharts();
     }
 
-    private void updateCharts(){
-        updateSeatsDisChart();
-    }
-    
-    private void updateComarcas(){
-        Map<String, String> m = DataAccessLayer.getElectionResults(yearToShow).getRegionProvinces();
-        ObservableList<String> clist = FXCollections.observableArrayList();
-        for (Map.Entry<String, String> entry : m.entrySet()) {
-            if(entry.getValue().equals(provinceToShow)){
-                System.out.println(entry.getKey() + entry.getValue());
-                clist.add(entry.getKey());
+    @FXML // Iniciar comportamiento del mapa
+    private void initImages() {
+        // Default opacity 80%
+        cstDefOp = 0.8;
+        vlcDefOp = 0.8;
+        alcDefOp = 0.8;
+        // Listeners for Castellon
+        castellonImage.addEventHandler(MouseEvent.MOUSE_CLICKED, (MouseEvent event) -> {
+            if (provinceToShow == "Castellón") {
+                cstDefOp = 0.8;
+                castellonImage.setOpacity(cstDefOp);
+                vlcDefOp = 0.8;
+                valenciaImage.setOpacity(vlcDefOp);
+                alcDefOp = 0.8;
+                alicanteImage.setOpacity(alcDefOp);
+                comarcaToShow = null;
+                provinceToShow = null;
+                communityLabel.setText("Comunidad Valenciana");
+
+                seatsDisChart.setTitle("Seats distribution for " + "Comunidad Valenciana");
+                partyVotesChart.setTitle("Party votes in " + "Comunidad Valenciana");
+                updateComarcas();
+                updateCharts();
+            } else {
+                cstDefOp = 0.9;
+                castellonImage.setOpacity(cstDefOp);
+                vlcDefOp = 0.5;
+                valenciaImage.setOpacity(vlcDefOp);
+                alcDefOp = 0.5;
+                alicanteImage.setOpacity(alcDefOp);
+                comarcaToShow = null;
+                provinceToShow = "Castellón";
+                communityLabel.setText(provinceToShow);
+
+                seatsDisChart.setTitle("Seats distribution for " + provinceToShow);
+                partyVotesChart.setTitle("Party votes in " + provinceToShow);
+                updateComarcas();
+                updateCharts();
             }
-        }
-        comarcaSelector.setItems(clist);
-    }
-    
-    private void updateSeatsDisChart(){
-        if(provinceToShow != null){
-            int talla = DataAccessLayer.getElectionResults(yearToShow).getProvinceResults(provinceToShow).getPartyResultsSorted().size();
-            ObservableList<PieChart.Data> obs = FXCollections.observableArrayList();
-            for (int i = 0; i < talla; i++) {
-               PartyResults aux = DataAccessLayer.getElectionResults(yearToShow).getProvinceResults(provinceToShow).getPartyResultsSorted().get(i);
-               if(aux.getPercentage() > filterToShow ){
-                    PieChart.Data d = new PieChart.Data(aux.getParty() + " (" + aux.getSeats() + ")", aux.getSeats());
-                    obs.add(d);
-               }
+            castellonImage.setOpacity(0.9);
+            event.consume();
+        });
+        castellonImage.addEventHandler(MouseEvent.MOUSE_ENTERED, (MouseEvent event) -> {
+            castellonImage.setOpacity(1);
+            event.consume();
+        });
+        castellonImage.addEventHandler(MouseEvent.MOUSE_EXITED, (MouseEvent event) -> {
+            castellonImage.setOpacity(cstDefOp);
+            event.consume();
+        });
+        // Listeners for Valencia
+        valenciaImage.addEventHandler(MouseEvent.MOUSE_CLICKED, (MouseEvent event) -> {
+            if (provinceToShow == "Valencia") {
+                cstDefOp = 0.8;
+                castellonImage.setOpacity(cstDefOp);
+                vlcDefOp = 0.8;
+                valenciaImage.setOpacity(vlcDefOp);
+                alcDefOp = 0.8;
+                alicanteImage.setOpacity(alcDefOp);
+                comarcaToShow = null;
+                provinceToShow = null;
+                communityLabel.setText("Comunidad Valenciana");
+
+                seatsDisChart.setTitle("Seats distribution for " + "Comunidad Valenciana");
+                partyVotesChart.setTitle("Party votes in " + "Comunidad Valenciana");
+                updateComarcas();
+                updateCharts();
+            } else {
+                cstDefOp = 0.5;
+                castellonImage.setOpacity(cstDefOp);
+                vlcDefOp = 0.9;
+                valenciaImage.setOpacity(vlcDefOp);
+                alcDefOp = 0.5;
+                alicanteImage.setOpacity(alcDefOp);
+                comarcaToShow = null;
+                provinceToShow = "Valencia";
+                communityLabel.setText(provinceToShow);
+
+                seatsDisChart.setTitle("Seats distribution for " + provinceToShow);
+                partyVotesChart.setTitle("Party votes in " + provinceToShow);
+                updateComarcas();
+                updateCharts();
             }
-            seatsDisChart.setData(obs);
-        } else {
-            ObservableList<PieChart.Data> cobs = FXCollections.observableArrayList();
-        for (int i = 0; i < DataAccessLayer.getElectionResults(yearToShow).getGlobalResults().getPartyResultsSorted().size(); i++) {
-            PartyResults aux = DataAccessLayer.getElectionResults(yearToShow).getGlobalResults().getPartyResultsSorted().get(i);
-            if(aux.getPercentage()*100 > filterToShow){
-                PieChart.Data d = new PieChart.Data(
-                    aux.getParty() + " (" + aux.getSeats() + ")",
-                    aux.getSeats()
-                );
-                cobs.add(d);
+            valenciaImage.setOpacity(0.9);
+            event.consume();
+        });
+        valenciaImage.addEventHandler(MouseEvent.MOUSE_ENTERED, (MouseEvent event) -> {
+            valenciaImage.setOpacity(1);
+            event.consume();
+        });
+        valenciaImage.addEventHandler(MouseEvent.MOUSE_EXITED, (MouseEvent event) -> {
+            valenciaImage.setOpacity(vlcDefOp);
+            event.consume();
+        });
+        // Listeners for Alicante
+        alicanteImage.addEventHandler(MouseEvent.MOUSE_CLICKED, (MouseEvent event) -> {
+            if (provinceToShow == "Alicante") {
+                cstDefOp = 0.8;
+                castellonImage.setOpacity(cstDefOp);
+                vlcDefOp = 0.8;
+                valenciaImage.setOpacity(vlcDefOp);
+                alcDefOp = 0.8;
+                alicanteImage.setOpacity(alcDefOp);
+                comarcaToShow = null;
+                provinceToShow = null;
+                communityLabel.setText("Comunidad Valenciana");
+
+                seatsDisChart.setTitle("Seats distribution for " + "Comunidad Valenciana");
+                partyVotesChart.setTitle("Party votes in " + "Comunidad Valenciana");
+                updateComarcas();
+                updateCharts();
+            } else {
+                cstDefOp = 0.5;
+                castellonImage.setOpacity(cstDefOp);
+                vlcDefOp = 0.5;
+                valenciaImage.setOpacity(vlcDefOp);
+                alcDefOp = 0.9;
+                alicanteImage.setOpacity(alcDefOp);
+                comarcaToShow = null;
+                provinceToShow = "Alicante";
+                communityLabel.setText(provinceToShow);
+
+                seatsDisChart.setTitle("Seats distribution for " + provinceToShow);
+                partyVotesChart.setTitle("Party votes in " + provinceToShow);
+                updateComarcas();
+                updateCharts();
             }
-        }
-        seatsDisChart.setData(cobs);
-        }
-    }
-    
-    @FXML
-    private void unfocusCst(MouseEvent event) {
-        castellonImage.setOpacity(cstDefOp);
-    }
-
-    @FXML
-    private void focusCst(MouseEvent event) {
-        castellonImage.setOpacity(1);
+            alicanteImage.setOpacity(0.9);
+            event.consume();
+        });
+        alicanteImage.addEventHandler(MouseEvent.MOUSE_ENTERED, (MouseEvent event) -> {
+            alicanteImage.setOpacity(1);
+            event.consume();
+        });
+        alicanteImage.addEventHandler(MouseEvent.MOUSE_EXITED, (MouseEvent event) -> {
+            alicanteImage.setOpacity(alcDefOp);
+            event.consume();
+        });
     }
 
-    @FXML
-    private void unfocusVlc(MouseEvent event) {
-        valenciaImage.setOpacity(vlcDefOp);
-    }
-
-    @FXML
-    private void focusVlc(MouseEvent event) {
-        valenciaImage.setOpacity(1);
-    }
-
-    @FXML
-    private void unfocusAlc(MouseEvent event) {
-        alicanteImage.setOpacity(alcDefOp);
-    }
-
-    @FXML
-    private void focusAlc(MouseEvent event) {
-        alicanteImage.setOpacity(1);
-    }
-
-    @FXML
-    private void selectCst(MouseEvent event) {
-        cstDefOp = 1;
-        castellonImage.setOpacity(cstDefOp);
-        vlcDefOp = 0.75;
-        valenciaImage.setOpacity(vlcDefOp);
-        alcDefOp = 0.75;
-        alicanteImage.setOpacity(alcDefOp);
-        provinceToShow = "Castellón";
-        communityLabel.setText(provinceToShow);
-        seatsDisChart.setTitle("Seats distribution for " + provinceToShow);
-        partyVotesChart.setTitle("Party votes in " + provinceToShow);
-        updateComarcas();
-        updateCharts();
-    }
-
-    @FXML
-    private void selectVlc(MouseEvent event) {
-        cstDefOp = 0.75;
-        castellonImage.setOpacity(cstDefOp);
-        vlcDefOp = 1;
-        valenciaImage.setOpacity(vlcDefOp);
-        alcDefOp = 0.75;
-        alicanteImage.setOpacity(alcDefOp);
-        provinceToShow = "Valencia";
-        communityLabel.setText(provinceToShow);
-        seatsDisChart.setTitle("Seats distribution for " + provinceToShow);
-        partyVotesChart.setTitle("Party votes in " + provinceToShow);
-        updateComarcas();
-        updateCharts();
-    }
-
-    @FXML
-    private void selectAlc(MouseEvent event) {
-        cstDefOp = 0.75;
-        castellonImage.setOpacity(cstDefOp);
-        vlcDefOp = 0.75;
-        valenciaImage.setOpacity(vlcDefOp);
-        alcDefOp = 1;
-        alicanteImage.setOpacity(alcDefOp);
-        provinceToShow = "Alicante";
-        communityLabel.setText(provinceToShow);
-        seatsDisChart.setTitle("Seats distribution for " + provinceToShow);
-        partyVotesChart.setTitle("Party votes in " + provinceToShow);
-        updateComarcas();
-        updateCharts();
-    }
-    
 }
