@@ -140,10 +140,8 @@ public class FXMLDocumentController implements Initializable {
         comarcaSelector.getSelectionModel().selectedIndexProperty().addListener((ObservableValue<? extends Number> observableValue, Number number, Number number2) -> {
             try {
                 String cChanged = comarcaSelector.getItems().get((Integer) number2);
-                System.out.println(comarcaToShow);
                 comarcaLabel.setText(cChanged);
                 comarcaToShow = cChanged;
-                System.out.println(comarcaToShow);
                 updateCharts();
             } catch (Exception e) {
             }

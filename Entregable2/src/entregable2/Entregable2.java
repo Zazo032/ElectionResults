@@ -26,6 +26,8 @@ public class Entregable2 extends Application {
         stage.setScene(scene);
         stage.show();
         stage.setTitle("RESULTADOS ELECTORALES");
+        stage.setMinHeight(730);
+        stage.setMinWidth(730);
     }
 
     /**
