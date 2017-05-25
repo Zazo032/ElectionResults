@@ -1,11 +1,10 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Entregable 2 - IPC 2017
  */
 package entregable2;
 
 import electionresults.model.PartyResults;
+import electionresults.model.RegionResults;
 import electionresults.persistence.io.DataAccessLayer;
 import java.net.URL;
 import java.util.List;
@@ -16,11 +15,13 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.chart.BarChart;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.PieChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
@@ -28,11 +29,11 @@ import javafx.scene.control.Slider;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 
 /**
- *
- * @author cristianzazo
+ * 
+ * @author Cristian Zazo
+ * @author Jorge Asensi
  */
 public class FXMLDocumentController implements Initializable {
 
@@ -52,13 +53,6 @@ public class FXMLDocumentController implements Initializable {
     private ImageView alicanteImage;
     @FXML
     private HBox yearContainer;
-
-    double cstDefOp, vlcDefOp, alcDefOp;
-    int yearToShow = 0;
-    String provinceToShow;
-    String comarcaToShow;
-    double filterToShow;
-
     @FXML
     private Label communityLabel;
     @FXML
@@ -68,13 +62,20 @@ public class FXMLDocumentController implements Initializable {
     @FXML
     private Slider sliderFilter;
 
+    double cstDefOp, vlcDefOp, alcDefOp;
+    int yearToShow = 0;
+    String provinceToShow;
+    String comarcaToShow;
+    double filterToShow;
+
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        // Inicializar interfaz
         initImages();
         initYears();
         initSlider();
         initComarcas();
-
+        // Actualizar interfaz
         updateComarcas();
         updateCharts();
     }
@@ -82,6 +83,7 @@ public class FXMLDocumentController implements Initializable {
     // Lanzadera para actualizar las gráficas
     private void updateCharts() {
         updateSeatsDisChart();
+        updatePartyVotesChart();
     }
 
     // Actualiza el ChoiceBox de comarcas
@@ -109,6 +111,7 @@ public class FXMLDocumentController implements Initializable {
     // Actualiza el PieChart (Seats Distribution)
     private void updateSeatsDisChart() {
         if (provinceToShow != null) {
+            seatsDisChart.setTitle("Seats distribution for " + provinceToShow);
             int talla = DataAccessLayer.getElectionResults(yearToShow).getProvinceResults(provinceToShow).getPartyResultsSorted().size();
             ObservableList<PieChart.Data> obs = FXCollections.observableArrayList();
             for (int i = 0; i < talla; i++) {
@@ -120,6 +123,7 @@ public class FXMLDocumentController implements Initializable {
             }
             seatsDisChart.setData(obs);
         } else {
+            seatsDisChart.setTitle("Seats distribution for Comunidad Valenciana");
             ObservableList<PieChart.Data> cobs = FXCollections.observableArrayList();
             for (int i = 0; i < DataAccessLayer.getElectionResults(yearToShow).getGlobalResults().getPartyResultsSorted().size(); i++) {
                 PartyResults aux = DataAccessLayer.getElectionResults(yearToShow).getGlobalResults().getPartyResultsSorted().get(i);
@@ -135,6 +139,52 @@ public class FXMLDocumentController implements Initializable {
         }
     }
 
+    // Actualiza el BarChart (Party Votes)
+    private void updatePartyVotesChart(){        
+        if(provinceToShow == null) { // Comunidad Valenciana
+            partyVotesChart.setTitle("Party Votes for Comunidad Valenciana");
+            partyVotesChart.setData(FXCollections.observableArrayList());
+            List<PartyResults> lrr = DataAccessLayer.getElectionResults(yearToShow).getGlobalResults().getPartyResultsSorted();
+            for (PartyResults r : lrr) {
+                XYChart.Series s = new XYChart.Series();
+                s.setName(r.getParty());
+                if(r.getPercentage() > filterToShow){
+                    XYChart.Data d = new XYChart.Data("" + yearToShow,r.getVotes());
+                    s.getData().add(d);
+                    partyVotesChart.getData().add(s);
+                }
+            }
+        } else {
+            if(comarcaToShow == null) { // Provincia
+                partyVotesChart.setTitle("Party Votes for " + provinceToShow);
+                partyVotesChart.setData(FXCollections.observableArrayList());
+                List<PartyResults> lrr = DataAccessLayer.getElectionResults(yearToShow).getProvinceResults(provinceToShow).getPartyResultsSorted();
+                for (PartyResults r : lrr) {
+                    XYChart.Series s = new XYChart.Series();
+                    s.setName(r.getParty());
+                    if(r.getPercentage() > filterToShow){
+                        XYChart.Data d = new XYChart.Data("" + yearToShow,r.getVotes());
+                        s.getData().add(d);
+                        partyVotesChart.getData().add(s);
+                    }
+                }
+            } else { // Comarca
+                partyVotesChart.setTitle("Party Votes for " + comarcaToShow);
+                partyVotesChart.setData(FXCollections.observableArrayList());
+                List<PartyResults> lrr = DataAccessLayer.getElectionResults(yearToShow).getRegionResults(comarcaToShow).getPartyResultsSorted();
+                for (PartyResults r : lrr) {
+                    XYChart.Series s = new XYChart.Series();
+                    s.setName(r.getParty());
+                    if(r.getPercentage() > filterToShow){
+                        XYChart.Data d = new XYChart.Data("" + yearToShow,r.getVotes());
+                        s.getData().add(d);
+                        partyVotesChart.getData().add(s);
+                    }
+                }
+            }
+        }
+    }
+    
     // Listener del ChoiceBox de comarcas
     private void initComarcas() {
         comarcaSelector.getSelectionModel().selectedIndexProperty().addListener((ObservableValue<? extends Number> observableValue, Number number, Number number2) -> {
@@ -144,20 +194,25 @@ public class FXMLDocumentController implements Initializable {
                 comarcaToShow = cChanged;
                 updateCharts();
             } catch (Exception e) {
+                comarcaToShow = null;
+                comarcaLabel.setText("");
+                updateCharts();
             }
         });
     }
 
     // Iniciar filtro (slider)
     private void initSlider() {
+        filterToShow = 2.5;
         sliderFilter.valueProperty().addListener(new ChangeListener<Number>() {
             public void changed(ObservableValue<? extends Number> ov,
                     Number old_val, Number new_val) {
                 double aux = sliderFilter.valueProperty().getValue();
                 if (aux % 0.5 == 0) {
                     filterToShow = (Double) new_val;
-                    updateSeatsDisChart();
+                    updateCharts();
                 }
+                System.out.println(filterToShow);
             }
         });
     }
@@ -198,8 +253,6 @@ public class FXMLDocumentController implements Initializable {
                 provinceToShow = null;
                 communityLabel.setText("Comunidad Valenciana");
 
-                seatsDisChart.setTitle("Seats distribution for " + "Comunidad Valenciana");
-                partyVotesChart.setTitle("Party votes in " + "Comunidad Valenciana");
                 updateComarcas();
                 updateCharts();
             } else {
@@ -213,8 +266,6 @@ public class FXMLDocumentController implements Initializable {
                 provinceToShow = "Castellón";
                 communityLabel.setText(provinceToShow);
 
-                seatsDisChart.setTitle("Seats distribution for " + provinceToShow);
-                partyVotesChart.setTitle("Party votes in " + provinceToShow);
                 updateComarcas();
                 updateCharts();
             }
@@ -242,8 +293,6 @@ public class FXMLDocumentController implements Initializable {
                 provinceToShow = null;
                 communityLabel.setText("Comunidad Valenciana");
 
-                seatsDisChart.setTitle("Seats distribution for " + "Comunidad Valenciana");
-                partyVotesChart.setTitle("Party votes in " + "Comunidad Valenciana");
                 updateComarcas();
                 updateCharts();
             } else {
@@ -257,8 +306,6 @@ public class FXMLDocumentController implements Initializable {
                 provinceToShow = "Valencia";
                 communityLabel.setText(provinceToShow);
 
-                seatsDisChart.setTitle("Seats distribution for " + provinceToShow);
-                partyVotesChart.setTitle("Party votes in " + provinceToShow);
                 updateComarcas();
                 updateCharts();
             }
@@ -286,8 +333,6 @@ public class FXMLDocumentController implements Initializable {
                 provinceToShow = null;
                 communityLabel.setText("Comunidad Valenciana");
 
-                seatsDisChart.setTitle("Seats distribution for " + "Comunidad Valenciana");
-                partyVotesChart.setTitle("Party votes in " + "Comunidad Valenciana");
                 updateComarcas();
                 updateCharts();
             } else {
@@ -301,8 +346,6 @@ public class FXMLDocumentController implements Initializable {
                 provinceToShow = "Alicante";
                 communityLabel.setText(provinceToShow);
 
-                seatsDisChart.setTitle("Seats distribution for " + provinceToShow);
-                partyVotesChart.setTitle("Party votes in " + provinceToShow);
                 updateComarcas();
                 updateCharts();
             }
