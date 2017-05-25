@@ -3,10 +3,14 @@
  */
 package entregable2;
 
+import electionresults.model.ElectionResults;
 import electionresults.model.PartyResults;
+import electionresults.model.PollData;
+import electionresults.model.ProvinceInfo;
 import electionresults.model.RegionResults;
 import electionresults.persistence.io.DataAccessLayer;
 import java.net.URL;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -42,7 +46,7 @@ public class FXMLDocumentController implements Initializable {
     @FXML
     private BarChart<String, Number> partyVotesChart;
     @FXML
-    private BarChart<?, ?> participationChart;
+    private BarChart<String, Number> participationChart;
     @FXML
     private ChoiceBox<String> comarcaSelector;
     @FXML
@@ -78,6 +82,7 @@ public class FXMLDocumentController implements Initializable {
         // Actualizar interfaz
         updateComarcas();
         updateCharts();
+        updateParticipationChart();
     }
 
     // Lanzadera para actualizar las gráficas
@@ -185,6 +190,54 @@ public class FXMLDocumentController implements Initializable {
         }
     }
     
+    // Actualiza el BarChart (Participation %)
+    private void updateParticipationChart(){
+        List<ElectionResults> ler = DataAccessLayer.getAllElectionResults();
+        Collection<XYChart.Series<String,Number>> c = FXCollections.observableArrayList();
+        XYChart.Series s1 = new XYChart.Series();
+        s1.setName("Comunidad Valenciana");
+        c.add(s1);
+        XYChart.Series s2 = new XYChart.Series();
+        s2.setName("Alicante");
+        c.add(s2);
+        XYChart.Series s3 = new XYChart.Series();
+        s3.setName("Castellón");
+        c.add(s3);
+        XYChart.Series s4 = new XYChart.Series();
+        s4.setName("Valencia");
+        c.add(s4);
+        for (ElectionResults y : ler) {
+            /*double v = ((double) y.getGlobalResults().getPollData().getVotes() / y.getGlobalResults().getPollData().getCensus()) * 100;
+            XYChart.Data d = new XYChart.Data("" + y.getYear(),v);
+            s1.getData().add(d);*/
+            for (XYChart.Series<String, Number> s : c) {
+                if(s.getName().equals("Alicante") || s.getName().equals("Valencia") || s.getName().equals("Castellón")){
+                    double v = ((double) y.getProvinceResults(s.getName()).getPollData().getVotes() / y.getProvinceResults(s.getName()).getPollData().getCensus()) * 100;
+                    XYChart.Data d = new XYChart.Data("" + y.getYear(),v);
+                    s.getData().add(d);
+                } else {
+                    double v = ((double) y.getGlobalResults().getPollData().getVotes() / y.getGlobalResults().getPollData().getCensus()) * 100;
+                    XYChart.Data d = new XYChart.Data("" + y.getYear(),v);
+                    s1.getData().add(d);
+                }
+            }
+            /*double v = ((double) y.getGlobalResults().getPollData().getVotes() / y.getGlobalResults().getPollData().getCensus()) * 100;
+            XYChart.Data d = new XYChart.Data("" + y.getYear(),v);
+            s1.getData().add(d);
+            v = ((double) y.getProvinceResults(s2.getName()).getPollData().getVotes() / y.getProvinceResults(s2.getName()).getPollData().getCensus()) * 100;
+            d = new XYChart.Data("" + y.getYear(),v);
+            s2.getData().add(d);
+            v = ((double) y.getGlobalResults().getPollData().getVotes() / y.getGlobalResults().getPollData().getCensus()) * 100;
+            d = new XYChart.Data("" + y.getYear(),v);
+            s3.getData().add(d);
+            v = ((double) y.getGlobalResults().getPollData().getVotes() / y.getGlobalResults().getPollData().getCensus()) * 100;
+            d = new XYChart.Data("" + y.getYear(),v);
+            s4.getData().add(d);*/
+            
+        }
+        participationChart.setData(FXCollections.observableArrayList(c));
+    }
+    
     // Listener del ChoiceBox de comarcas
     private void initComarcas() {
         comarcaSelector.getSelectionModel().selectedIndexProperty().addListener((ObservableValue<? extends Number> observableValue, Number number, Number number2) -> {
@@ -232,6 +285,8 @@ public class FXMLDocumentController implements Initializable {
             yearContainer.getChildren().add(b);
         }
         yearToShow = 2015;
+        yearLabel.setText("" + yearToShow);
+        communityLabel.setText("Comunidad Valenciana");
     }
 
     // Iniciar comportamiento del mapa
