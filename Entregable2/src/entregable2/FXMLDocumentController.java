@@ -121,7 +121,7 @@ public class FXMLDocumentController implements Initializable {
             ObservableList<PieChart.Data> obs = FXCollections.observableArrayList();
             for (int i = 0; i < talla; i++) {
                 PartyResults aux = DataAccessLayer.getElectionResults(yearToShow).getProvinceResults(provinceToShow).getPartyResultsSorted().get(i);
-                if (aux.getPercentage() > filterToShow) {
+                if (aux.getSeats() > 0) {
                     PieChart.Data d = new PieChart.Data(aux.getParty() + " (" + aux.getSeats() + ")", aux.getSeats());
                     obs.add(d);
                 }
@@ -132,7 +132,7 @@ public class FXMLDocumentController implements Initializable {
             ObservableList<PieChart.Data> cobs = FXCollections.observableArrayList();
             for (int i = 0; i < DataAccessLayer.getElectionResults(yearToShow).getGlobalResults().getPartyResultsSorted().size(); i++) {
                 PartyResults aux = DataAccessLayer.getElectionResults(yearToShow).getGlobalResults().getPartyResultsSorted().get(i);
-                if (aux.getPercentage() * 100 > filterToShow) {
+                if (aux.getSeats() > 0) {
                     PieChart.Data d = new PieChart.Data(
                             aux.getParty() + " (" + aux.getSeats() + ")",
                             aux.getSeats()
