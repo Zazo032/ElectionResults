@@ -37,23 +37,7 @@
                   <HBox fx:id="yearContainer" alignment="CENTER" spacing="12.0" />
                   <HBox alignment="CENTER">
                      <children>
-                        <VBox alignment="TOP_CENTER" minHeight="-Infinity" minWidth="-Infinity">
-                           <children>
-                              <Text fill="#00000080" strokeType="OUTSIDE" strokeWidth="0.0" text="\%" />
-                              <Slider fx:id="sliderFilter" blockIncrement="0.5" majorTickUnit="0.5" max="5.0" minorTickCount="0" orientation="VERTICAL" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="2.5" VBox.vgrow="ALWAYS" />
-                           </children>
-                        </VBox>
-                        <Separator orientation="VERTICAL" prefHeight="200.0">
-                           <HBox.margin>
-                              <Insets />
-                           </HBox.margin>
-                        </Separator>
                         <PieChart fx:id="seatsDisChart" legendVisible="false" title="Seats distribution for" HBox.hgrow="SOMETIMES" />
-                        <Separator orientation="VERTICAL" prefHeight="200.0">
-                           <HBox.margin>
-                              <Insets />
-                           </HBox.margin>
-                        </Separator>
                         <BarChart fx:id="partyVotesChart" title="Party votes in" HBox.hgrow="SOMETIMES">
                           <xAxis>
                             <CategoryAxis side="BOTTOM" />
@@ -62,6 +46,12 @@
                             <NumberAxis side="LEFT" />
                           </yAxis>
                         </BarChart>
+                        <Slider fx:id="sliderFilter" blockIncrement="0.5" majorTickUnit="0.5" max="5.0" minorTickCount="0" orientation="VERTICAL" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="2.5" />
+                        <VBox alignment="TOP_CENTER" minHeight="-Infinity" minWidth="-Infinity">
+                           <children>
+                              <Text fill="#00000080" strokeType="OUTSIDE" strokeWidth="0.0" text="\%" />
+                           </children>
+                        </VBox>
                      </children>
                      <VBox.margin>
                         <Insets />

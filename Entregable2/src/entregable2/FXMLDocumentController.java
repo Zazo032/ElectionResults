@@ -5,9 +5,6 @@ package entregable2;
 
 import electionresults.model.ElectionResults;
 import electionresults.model.PartyResults;
-import electionresults.model.PollData;
-import electionresults.model.ProvinceInfo;
-import electionresults.model.RegionResults;
 import electionresults.persistence.io.DataAccessLayer;
 import java.net.URL;
 import java.util.Collection;
@@ -18,12 +15,11 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.chart.BarChart;
-import javafx.scene.chart.CategoryAxis;
-import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
@@ -67,7 +63,7 @@ public class FXMLDocumentController implements Initializable {
     private Slider sliderFilter;
 
     double cstDefOp, vlcDefOp, alcDefOp;
-    int yearToShow = 0;
+    int yearToShow;
     String provinceToShow;
     String comarcaToShow;
     double filterToShow;
@@ -75,14 +71,38 @@ public class FXMLDocumentController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         // Inicializar interfaz
-        initImages();
-        initYears();
-        initSlider();
-        initComarcas();
+        Task task = new Task() {
+            @Override
+            protected Object call() throws Exception {
+                System.out.println("Inicializando datos...");
+                initImages();
+                initYears();
+                initSlider();
+                initComarcas();
+                System.out.println("Datos inicializados");
+                return 0;
+            }
+        };
+        Thread t = new Thread(task);
+        t.setDaemon(true);
+        
         // Actualizar interfaz
-        updateComarcas();
-        updateCharts();
-        updateParticipationChart();
+        Task task2 = new Task() {
+            @Override
+            protected Object call() throws Exception {
+                System.out.println("Actualizando interfaz...");
+                updateComarcas();
+                updateCharts();
+                updateParticipationChart();
+                System.out.println("Interfaz actualizada...");
+                return 0;
+            }
+        };
+        Thread t2 = new Thread(task2);
+        t2.setDaemon(true);
+        
+        t.run();
+        t2.run();
     }
 
     // Lanzadera para actualizar las gráficas
@@ -93,6 +113,7 @@ public class FXMLDocumentController implements Initializable {
 
     // Actualiza el ChoiceBox de comarcas
     private void updateComarcas() {
+        System.out.println("Actualizando comarcas...");
         if (provinceToShow != null) {
             comarcaSelector.setDisable(false);
             Map<String, String> m = DataAccessLayer.getElectionResults(yearToShow).getRegionProvinces();
@@ -111,6 +132,7 @@ public class FXMLDocumentController implements Initializable {
             ObservableList<String> clist = FXCollections.observableArrayList();
             comarcaSelector.setItems(clist);
         }
+        System.out.println("Comarcas actualizadas");
     }
 
     // Actualiza el PieChart (Seats Distribution)
@@ -133,10 +155,7 @@ public class FXMLDocumentController implements Initializable {
             for (int i = 0; i < DataAccessLayer.getElectionResults(yearToShow).getGlobalResults().getPartyResultsSorted().size(); i++) {
                 PartyResults aux = DataAccessLayer.getElectionResults(yearToShow).getGlobalResults().getPartyResultsSorted().get(i);
                 if (aux.getSeats() > 0) {
-                    PieChart.Data d = new PieChart.Data(
-                            aux.getParty() + " (" + aux.getSeats() + ")",
-                            aux.getSeats()
-                    );
+                    PieChart.Data d = new PieChart.Data(aux.getParty() + " (" + aux.getSeats() + ")", aux.getSeats());
                     cobs.add(d);
                 }
             }
@@ -207,9 +226,6 @@ public class FXMLDocumentController implements Initializable {
         s4.setName("Valencia");
         c.add(s4);
         for (ElectionResults y : ler) {
-            /*double v = ((double) y.getGlobalResults().getPollData().getVotes() / y.getGlobalResults().getPollData().getCensus()) * 100;
-            XYChart.Data d = new XYChart.Data("" + y.getYear(),v);
-            s1.getData().add(d);*/
             for (XYChart.Series<String, Number> s : c) {
                 if(s.getName().equals("Alicante") || s.getName().equals("Valencia") || s.getName().equals("Castellón")){
                     double v = ((double) y.getProvinceResults(s.getName()).getPollData().getVotes() / y.getProvinceResults(s.getName()).getPollData().getCensus()) * 100;
@@ -221,19 +237,6 @@ public class FXMLDocumentController implements Initializable {
                     s1.getData().add(d);
                 }
             }
-            /*double v = ((double) y.getGlobalResults().getPollData().getVotes() / y.getGlobalResults().getPollData().getCensus()) * 100;
-            XYChart.Data d = new XYChart.Data("" + y.getYear(),v);
-            s1.getData().add(d);
-            v = ((double) y.getProvinceResults(s2.getName()).getPollData().getVotes() / y.getProvinceResults(s2.getName()).getPollData().getCensus()) * 100;
-            d = new XYChart.Data("" + y.getYear(),v);
-            s2.getData().add(d);
-            v = ((double) y.getGlobalResults().getPollData().getVotes() / y.getGlobalResults().getPollData().getCensus()) * 100;
-            d = new XYChart.Data("" + y.getYear(),v);
-            s3.getData().add(d);
-            v = ((double) y.getGlobalResults().getPollData().getVotes() / y.getGlobalResults().getPollData().getCensus()) * 100;
-            d = new XYChart.Data("" + y.getYear(),v);
-            s4.getData().add(d);*/
-            
         }
         participationChart.setData(FXCollections.observableArrayList(c));
     }
@@ -263,7 +266,7 @@ public class FXMLDocumentController implements Initializable {
                 double aux = sliderFilter.valueProperty().getValue();
                 if (aux % 0.5 == 0) {
                     filterToShow = (Double) new_val;
-                    updateCharts();
+                    updatePartyVotesChart();
                 }
                 System.out.println(filterToShow);
             }
