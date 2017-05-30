@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -22,6 +23,8 @@ import javafx.fxml.Initializable;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
@@ -71,18 +74,14 @@ public class FXMLDocumentController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         // Inicializar interfaz
-        System.out.println("Inicializando datos...");
         initImages();
         initYears();
         initSlider();
         initComarcas();
-        System.out.println("Datos inicializados");
         
-        System.out.println("Actualizando interfaz...");
         updateComarcas();
         updateCharts();
         updateParticipationChart();
-        System.out.println("Interfaz actualizada...");
     }
 
     // Lanzadera para actualizar las gráficas
@@ -93,7 +92,7 @@ public class FXMLDocumentController implements Initializable {
 
     // Actualiza el ChoiceBox de comarcas
     private void updateComarcas() {
-        System.out.println("Actualizando comarcas...");
+        // IGUAL HAY QUE PONER TASK (puede ser)
         if (provinceToShow != null) {
             comarcaSelector.setDisable(false);
             Map<String, String> m = DataAccessLayer.getElectionResults(yearToShow).getRegionProvinces();
@@ -112,52 +111,110 @@ public class FXMLDocumentController implements Initializable {
             ObservableList<String> clist = FXCollections.observableArrayList();
             comarcaSelector.setItems(clist);
         }
-        System.out.println("Comarcas actualizadas");
     }
 
     // Actualiza el PieChart (Seats Distribution)
     private void updateSeatsDisChart() {
+        Task<List<PartyResults>> task = new Task<List<PartyResults>>() {
+            
+            @Override
+            protected List<PartyResults> call() throws Exception {
+                return DataAccessLayer.getElectionResults(yearToShow).getProvinceResults(provinceToShow).getPartyResultsSorted();
+            }
+            
+            @Override
+            protected void succeeded(){
+                List<PartyResults> lpr = getValue();
+                ObservableList<PieChart.Data> obs = FXCollections.observableArrayList();
+                for (int i = 0; i < lpr.size(); i++) {
+                    PartyResults aux = lpr.get(i);
+                    if (aux.getSeats() > 0) {
+                        PieChart.Data d = new PieChart.Data(aux.getParty() + " (" + aux.getSeats() + ")", aux.getSeats());
+                        obs.add(d);
+                    }
+                }
+                seatsDisChart.setData(obs);
+            }
+        };
+        
+        Task<List<PartyResults>> task2 = new Task<List<PartyResults>>() {
+            
+            @Override
+            protected List<PartyResults> call() throws Exception {
+                System.out.println("Chart Comunidad");
+                System.out.println(yearToShow + provinceToShow);
+                return DataAccessLayer.getElectionResults(yearToShow).getGlobalResults().getPartyResultsSorted();
+            }
+            
+            @Override
+            protected void succeeded(){
+                System.out.println("Succeed Comunidad");
+                ObservableList<PieChart.Data> cobs = FXCollections.observableArrayList();
+                List<PartyResults> lpr = getValue();
+                for (int i = 0; i < lpr.size(); i++) {
+                    PartyResults aux = lpr.get(i);
+                    if (aux.getSeats() > 0) {
+                        PieChart.Data d = new PieChart.Data(aux.getParty() + " (" + aux.getSeats() + ")", aux.getSeats());
+                        cobs.add(d);
+                    }
+                }
+                seatsDisChart.setData(cobs);
+            }
+            
+            @Override
+            protected void failed(){
+                System.out.println("Fail Comunidad");
+            }
+        };
+        
+        
         if (provinceToShow != null) {
             seatsDisChart.setTitle("Seats distribution for " + provinceToShow);
-            int talla = DataAccessLayer.getElectionResults(yearToShow).getProvinceResults(provinceToShow).getPartyResultsSorted().size();
-            ObservableList<PieChart.Data> obs = FXCollections.observableArrayList();
-            for (int i = 0; i < talla; i++) {
-                PartyResults aux = DataAccessLayer.getElectionResults(yearToShow).getProvinceResults(provinceToShow).getPartyResultsSorted().get(i);
-                if (aux.getSeats() > 0) {
-                    PieChart.Data d = new PieChart.Data(aux.getParty() + " (" + aux.getSeats() + ")", aux.getSeats());
-                    obs.add(d);
-                }
-            }
-            seatsDisChart.setData(obs);
+            Thread t = new Thread(task);
+            t.setDaemon(true);
+            t.start();
         } else {
             seatsDisChart.setTitle("Seats distribution for Comunidad Valenciana");
-            ObservableList<PieChart.Data> cobs = FXCollections.observableArrayList();
-            for (int i = 0; i < DataAccessLayer.getElectionResults(yearToShow).getGlobalResults().getPartyResultsSorted().size(); i++) {
-                PartyResults aux = DataAccessLayer.getElectionResults(yearToShow).getGlobalResults().getPartyResultsSorted().get(i);
-                if (aux.getSeats() > 0) {
-                    PieChart.Data d = new PieChart.Data(aux.getParty() + " (" + aux.getSeats() + ")", aux.getSeats());
-                    cobs.add(d);
-                }
-            }
-            seatsDisChart.setData(cobs);
+            Thread t2 = new Thread(task2);
+            t2.setDaemon(true);
+            t2.start();
         }
     }
 
     // Actualiza el BarChart (Party Votes)
-    private void updatePartyVotesChart(){        
-        if(provinceToShow == null) { // Comunidad Valenciana
-            partyVotesChart.setTitle("Party Votes for Comunidad Valenciana");
-            partyVotesChart.setData(FXCollections.observableArrayList());
-            List<PartyResults> lrr = DataAccessLayer.getElectionResults(yearToShow).getGlobalResults().getPartyResultsSorted();
-            for (PartyResults r : lrr) {
-                XYChart.Series s = new XYChart.Series();
-                s.setName(r.getParty());
-                if(r.getPercentage() > filterToShow){
-                    XYChart.Data d = new XYChart.Data("" + yearToShow,r.getVotes());
-                    s.getData().add(d);
-                    partyVotesChart.getData().add(s);
+    private void updatePartyVotesChart(){
+        Task<List<PartyResults>> task1 = new Task<List<PartyResults>>(){
+            @Override
+            protected List<PartyResults> call() throws Exception {
+                return DataAccessLayer.getElectionResults(yearToShow).getGlobalResults().getPartyResultsSorted();
+            }
+        
+            @Override
+            protected void succeeded(){
+                System.out.println("Comunidad votes succeed");
+                List<PartyResults> lrr = getValue();
+                partyVotesChart.setData(FXCollections.observableArrayList());
+                for (PartyResults r : lrr) {
+                    XYChart.Series s = new XYChart.Series();
+                    s.setName(r.getParty());
+                    if(r.getPercentage() > filterToShow){
+                        XYChart.Data d = new XYChart.Data("" + yearToShow,r.getVotes());
+                        s.getData().add(d);
+                        partyVotesChart.getData().add(s);
+                    }
                 }
             }
+            
+            @Override
+            protected void failed(){
+                System.out.println("Comunidad votes fail");
+            }
+        };
+        if(provinceToShow == null) { // Comunidad Valenciana
+            partyVotesChart.setTitle("Party Votes for Comunidad Valenciana");
+            Thread t1 = new Thread(task1);
+            //t1.setDaemon(true);
+            t1.start();
         } else {
             if(comarcaToShow == null) { // Provincia
                 partyVotesChart.setTitle("Party Votes for " + provinceToShow);
@@ -191,34 +248,58 @@ public class FXMLDocumentController implements Initializable {
     
     // Actualiza el BarChart (Participation %)
     private void updateParticipationChart(){
-        List<ElectionResults> ler = DataAccessLayer.getAllElectionResults();
-        Collection<XYChart.Series<String,Number>> c = FXCollections.observableArrayList();
-        XYChart.Series s1 = new XYChart.Series();
-        s1.setName("Comunidad Valenciana");
-        c.add(s1);
-        XYChart.Series s2 = new XYChart.Series();
-        s2.setName("Alicante");
-        c.add(s2);
-        XYChart.Series s3 = new XYChart.Series();
-        s3.setName("Castellón");
-        c.add(s3);
-        XYChart.Series s4 = new XYChart.Series();
-        s4.setName("Valencia");
-        c.add(s4);
-        for (ElectionResults y : ler) {
-            for (XYChart.Series<String, Number> s : c) {
-                if(s.getName().equals("Alicante") || s.getName().equals("Valencia") || s.getName().equals("Castellón")){
-                    double v = ((double) y.getProvinceResults(s.getName()).getPollData().getVotes() / y.getProvinceResults(s.getName()).getPollData().getCensus()) * 100;
-                    XYChart.Data d = new XYChart.Data("" + y.getYear(),v);
-                    s.getData().add(d);
-                } else {
-                    double v = ((double) y.getGlobalResults().getPollData().getVotes() / y.getGlobalResults().getPollData().getCensus()) * 100;
-                    XYChart.Data d = new XYChart.Data("" + y.getYear(),v);
-                    s1.getData().add(d);
-                }
+        /*
+        Task<List<ElectionResults>> task3 = new Task<List<ElectionResults>>(){
+            
+            @Override
+            protected List<ElectionResults> call() throws Exception {
+                System.out.println("updateParticipationChart()");
+                return DataAccessLayer.getAllElectionResults();
             }
-        }
-        participationChart.setData(FXCollections.observableArrayList(c));
+            
+            @Override
+            protected void succeeded(){
+                Collection<XYChart.Series<String,Number>> c = FXCollections.observableArrayList();
+                XYChart.Series s1 = new XYChart.Series();
+                s1.setName("Comunidad Valenciana");
+                c.add(s1);
+                XYChart.Series s2 = new XYChart.Series();
+                s2.setName("Alicante");
+                c.add(s2);
+                XYChart.Series s3 = new XYChart.Series();
+                s3.setName("Castellón");
+                c.add(s3);
+                XYChart.Series s4 = new XYChart.Series();
+                s4.setName("Valencia");
+                c.add(s4);
+        
+                List<ElectionResults> ler = getValue();
+                for (ElectionResults y : ler) {
+                    for (XYChart.Series<String, Number> s : c) {
+                        if(s.getName().equals("Alicante") || s.getName().equals("Valencia") || s.getName().equals("Castellón")){
+                            double v = ((double) y.getProvinceResults(s.getName()).getPollData().getVotes() / y.getProvinceResults(s.getName()).getPollData().getCensus()) * 100;
+                            XYChart.Data d = new XYChart.Data("" + y.getYear(),v);
+                            s.getData().add(d);
+                        } else {
+                            double v = ((double) y.getGlobalResults().getPollData().getVotes() / y.getGlobalResults().getPollData().getCensus()) * 100;
+                            XYChart.Data d = new XYChart.Data("" + y.getYear(),v);
+                            s1.getData().add(d);
+                        }
+                    }
+                }
+                participationChart.setData(FXCollections.observableArrayList(c));
+            }
+            
+            @Override
+            protected void failed(){
+            System.out.println("updateParticipationChart() ERROR");
+            }
+        };
+        
+        Thread t3 = new Thread(task3);
+        t3.setDaemon(true);
+        t3.start();
+        */
     }
     
     // Listener del ChoiceBox de comarcas
@@ -228,11 +309,11 @@ public class FXMLDocumentController implements Initializable {
                 String cChanged = comarcaSelector.getItems().get((Integer) number2);
                 comarcaLabel.setText(cChanged);
                 comarcaToShow = cChanged;
-                updateCharts();
+                updatePartyVotesChart();
             } catch (Exception e) {
                 comarcaToShow = null;
                 comarcaLabel.setText("");
-                updateCharts();
+                updatePartyVotesChart();
             }
         });
     }
