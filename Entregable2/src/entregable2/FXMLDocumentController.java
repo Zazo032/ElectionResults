@@ -71,38 +71,18 @@ public class FXMLDocumentController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         // Inicializar interfaz
-        Task task = new Task() {
-            @Override
-            protected Object call() throws Exception {
-                System.out.println("Inicializando datos...");
-                initImages();
-                initYears();
-                initSlider();
-                initComarcas();
-                System.out.println("Datos inicializados");
-                return 0;
-            }
-        };
-        Thread t = new Thread(task);
-        t.setDaemon(true);
+        System.out.println("Inicializando datos...");
+        initImages();
+        initYears();
+        initSlider();
+        initComarcas();
+        System.out.println("Datos inicializados");
         
-        // Actualizar interfaz
-        Task task2 = new Task() {
-            @Override
-            protected Object call() throws Exception {
-                System.out.println("Actualizando interfaz...");
-                updateComarcas();
-                updateCharts();
-                updateParticipationChart();
-                System.out.println("Interfaz actualizada...");
-                return 0;
-            }
-        };
-        Thread t2 = new Thread(task2);
-        t2.setDaemon(true);
-        
-        t.run();
-        t2.run();
+        System.out.println("Actualizando interfaz...");
+        updateComarcas();
+        updateCharts();
+        updateParticipationChart();
+        System.out.println("Interfaz actualizada...");
     }
 
     // Lanzadera para actualizar las gráficas
