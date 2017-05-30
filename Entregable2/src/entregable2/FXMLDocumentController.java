@@ -34,7 +34,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 
 /**
- * 
+ *
  * @author Cristian Zazo
  * @author Jorge Asensi
  */
@@ -70,6 +70,7 @@ public class FXMLDocumentController implements Initializable {
     String provinceToShow;
     String comarcaToShow;
     double filterToShow;
+    ElectionResults elRes;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -78,15 +79,22 @@ public class FXMLDocumentController implements Initializable {
         initYears();
         initSlider();
         initComarcas();
-        
+
         updateComarcas();
-        updateCharts();
+
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                updateCharts();
+            }
+        });
+
         updateParticipationChart();
     }
 
     // Lanzadera para actualizar las gráficas
     private void updateCharts() {
-        updateSeatsDisChart();
+        //updateSeatsDisChart();
         updatePartyVotesChart();
     }
 
@@ -116,14 +124,14 @@ public class FXMLDocumentController implements Initializable {
     // Actualiza el PieChart (Seats Distribution)
     private void updateSeatsDisChart() {
         Task<List<PartyResults>> task = new Task<List<PartyResults>>() {
-            
+
             @Override
             protected List<PartyResults> call() throws Exception {
                 return DataAccessLayer.getElectionResults(yearToShow).getProvinceResults(provinceToShow).getPartyResultsSorted();
             }
-            
+
             @Override
-            protected void succeeded(){
+            protected void succeeded() {
                 List<PartyResults> lpr = getValue();
                 ObservableList<PieChart.Data> obs = FXCollections.observableArrayList();
                 for (int i = 0; i < lpr.size(); i++) {
@@ -136,19 +144,16 @@ public class FXMLDocumentController implements Initializable {
                 seatsDisChart.setData(obs);
             }
         };
-        
+
         Task<List<PartyResults>> task2 = new Task<List<PartyResults>>() {
-            
+
             @Override
             protected List<PartyResults> call() throws Exception {
-                System.out.println("Chart Comunidad");
-                System.out.println(yearToShow + provinceToShow);
                 return DataAccessLayer.getElectionResults(yearToShow).getGlobalResults().getPartyResultsSorted();
             }
-            
+
             @Override
-            protected void succeeded(){
-                System.out.println("Succeed Comunidad");
+            protected void succeeded() {
                 ObservableList<PieChart.Data> cobs = FXCollections.observableArrayList();
                 List<PartyResults> lpr = getValue();
                 for (int i = 0; i < lpr.size(); i++) {
@@ -160,14 +165,13 @@ public class FXMLDocumentController implements Initializable {
                 }
                 seatsDisChart.setData(cobs);
             }
-            
+
             @Override
-            protected void failed(){
+            protected void failed() {
                 System.out.println("Fail Comunidad");
             }
         };
-        
-        
+
         if (provinceToShow != null) {
             seatsDisChart.setTitle("Seats distribution for " + provinceToShow);
             Thread t = new Thread(task);
@@ -182,84 +186,132 @@ public class FXMLDocumentController implements Initializable {
     }
 
     // Actualiza el BarChart (Party Votes)
-    private void updatePartyVotesChart(){
-        Task<List<PartyResults>> task1 = new Task<List<PartyResults>>(){
+    private void updatePartyVotesChart() {
+        Platform.runLater(new Runnable() {
             @Override
-            protected List<PartyResults> call() throws Exception {
-                return DataAccessLayer.getElectionResults(yearToShow).getGlobalResults().getPartyResultsSorted();
-            }
-        
-            @Override
-            protected void succeeded(){
-                System.out.println("Comunidad votes succeed");
-                List<PartyResults> lrr = getValue();
-                partyVotesChart.setData(FXCollections.observableArrayList());
-                for (PartyResults r : lrr) {
-                    XYChart.Series s = new XYChart.Series();
-                    s.setName(r.getParty());
-                    if(r.getPercentage() > filterToShow){
-                        XYChart.Data d = new XYChart.Data("" + yearToShow,r.getVotes());
-                        s.getData().add(d);
-                        partyVotesChart.getData().add(s);
+            public void run() {
+                Task<List<PartyResults>> task1 = new Task<List<PartyResults>>() {
+                    @Override
+                    protected List<PartyResults> call() throws Exception {
+                        return DataAccessLayer.getElectionResults(yearToShow).getGlobalResults().getPartyResultsSorted();
+                    }
+
+                    @Override
+                    protected void succeeded() {
+                        System.out.println("Comunidad votes succeed");
+                        List<PartyResults> lrr = getValue();
+                        partyVotesChart.setData(FXCollections.observableArrayList());
+                        for (PartyResults r : lrr) {
+                            XYChart.Series s = new XYChart.Series();
+                            s.setName(r.getParty());
+                            if (r.getPercentage() > filterToShow) {
+                                XYChart.Data d = new XYChart.Data("" + yearToShow, r.getVotes());
+                                s.getData().add(d);
+                                partyVotesChart.getData().add(s);
+                            }
+                        }
+                    }
+
+                    @Override
+                    protected void failed() {
+                        System.out.println("Comunidad votes fail");
+                    }
+                };
+
+                Task<List<PartyResults>> task2 = new Task<List<PartyResults>>() {
+                    @Override
+                    protected List<PartyResults> call() throws Exception {
+
+                        List<PartyResults> pr = DataAccessLayer.getElectionResults(yearToShow).getProvinceResults(provinceToShow).getPartyResultsSorted();
+                        System.out.println("Año: " + yearToShow + "\nProvincia: " + provinceToShow);
+                        System.out.println(pr.size());
+                        return pr;
+                    }
+
+                    @Override
+                    protected void succeeded() {
+                        System.out.println("Provincia votes succeed");
+                        List<PartyResults> lrr = getValue();
+                        partyVotesChart.setData(FXCollections.observableArrayList());
+                        for (PartyResults r : lrr) {
+                            XYChart.Series s = new XYChart.Series();
+                            s.setName(r.getParty());
+                            if (r.getPercentage() > filterToShow) {
+                                XYChart.Data d = new XYChart.Data("" + yearToShow, r.getVotes());
+                                s.getData().add(d);
+                                partyVotesChart.getData().add(s);
+                            }
+                        }
+                    }
+
+                    @Override
+                    protected void failed() {
+                        System.out.println("Provincia votes fail");
+                    }
+                };
+
+                Task<List<PartyResults>> task3 = new Task<List<PartyResults>>() {
+                    @Override
+                    protected List<PartyResults> call() throws Exception {
+                        return DataAccessLayer.getElectionResults(yearToShow).getRegionResults(comarcaToShow).getPartyResultsSorted();
+                    }
+
+                    @Override
+                    protected void succeeded() {
+                        System.out.println("Comarca votes succeed");
+                        List<PartyResults> lrr = getValue();
+                        partyVotesChart.setData(FXCollections.observableArrayList());
+                        for (PartyResults r : lrr) {
+                            XYChart.Series s = new XYChart.Series();
+                            s.setName(r.getParty());
+                            if (r.getPercentage() > filterToShow) {
+                                XYChart.Data d = new XYChart.Data("" + yearToShow, r.getVotes());
+                                s.getData().add(d);
+                                partyVotesChart.getData().add(s);
+                            }
+                        }
+                    }
+
+                    @Override
+                    protected void failed() {
+                        System.out.println("Comarca votes fail");
+                    }
+                };
+                if (provinceToShow == null) { // Comunidad Valenciana
+                    partyVotesChart.setTitle("Party Votes for Comunidad Valenciana");
+                    Thread t1 = new Thread(task1);
+                    t1.setDaemon(true);
+                    t1.start();
+                } else {
+                    if (comarcaToShow == null) { // Provincia
+                        partyVotesChart.setTitle("Party Votes for " + provinceToShow);
+                        Thread t2 = new Thread(task2);
+                        t2.setDaemon(true);
+                        t2.start();
+                    } else { // Comarca
+                        partyVotesChart.setTitle("Party Votes for " + comarcaToShow);
+                        Thread t3 = new Thread(task3);
+                        t3.setDaemon(true);
+                        t3.start();
                     }
                 }
             }
-            
-            @Override
-            protected void failed(){
-                System.out.println("Comunidad votes fail");
-            }
-        };
-        if(provinceToShow == null) { // Comunidad Valenciana
-            partyVotesChart.setTitle("Party Votes for Comunidad Valenciana");
-            Thread t1 = new Thread(task1);
-            //t1.setDaemon(true);
-            t1.start();
-        } else {
-            if(comarcaToShow == null) { // Provincia
-                partyVotesChart.setTitle("Party Votes for " + provinceToShow);
-                partyVotesChart.setData(FXCollections.observableArrayList());
-                List<PartyResults> lrr = DataAccessLayer.getElectionResults(yearToShow).getProvinceResults(provinceToShow).getPartyResultsSorted();
-                for (PartyResults r : lrr) {
-                    XYChart.Series s = new XYChart.Series();
-                    s.setName(r.getParty());
-                    if(r.getPercentage() > filterToShow){
-                        XYChart.Data d = new XYChart.Data("" + yearToShow,r.getVotes());
-                        s.getData().add(d);
-                        partyVotesChart.getData().add(s);
-                    }
-                }
-            } else { // Comarca
-                partyVotesChart.setTitle("Party Votes for " + comarcaToShow);
-                partyVotesChart.setData(FXCollections.observableArrayList());
-                List<PartyResults> lrr = DataAccessLayer.getElectionResults(yearToShow).getRegionResults(comarcaToShow).getPartyResultsSorted();
-                for (PartyResults r : lrr) {
-                    XYChart.Series s = new XYChart.Series();
-                    s.setName(r.getParty());
-                    if(r.getPercentage() > filterToShow){
-                        XYChart.Data d = new XYChart.Data("" + yearToShow,r.getVotes());
-                        s.getData().add(d);
-                        partyVotesChart.getData().add(s);
-                    }
-                }
-            }
-        }
+        });
     }
-    
+
     // Actualiza el BarChart (Participation %)
-    private void updateParticipationChart(){
-        /*
-        Task<List<ElectionResults>> task3 = new Task<List<ElectionResults>>(){
-            
+    private void updateParticipationChart() {
+
+        Task<List<ElectionResults>> task3 = new Task<List<ElectionResults>>() {
+
             @Override
             protected List<ElectionResults> call() throws Exception {
-                System.out.println("updateParticipationChart()");
                 return DataAccessLayer.getAllElectionResults();
             }
-            
+
             @Override
-            protected void succeeded(){
-                Collection<XYChart.Series<String,Number>> c = FXCollections.observableArrayList();
+            protected void succeeded() {
+                Collection<XYChart.Series<String, Number>> c = FXCollections.observableArrayList();
                 XYChart.Series s1 = new XYChart.Series();
                 s1.setName("Comunidad Valenciana");
                 c.add(s1);
@@ -272,36 +324,36 @@ public class FXMLDocumentController implements Initializable {
                 XYChart.Series s4 = new XYChart.Series();
                 s4.setName("Valencia");
                 c.add(s4);
-        
+
                 List<ElectionResults> ler = getValue();
                 for (ElectionResults y : ler) {
                     for (XYChart.Series<String, Number> s : c) {
-                        if(s.getName().equals("Alicante") || s.getName().equals("Valencia") || s.getName().equals("Castellón")){
+                        if (s.getName().equals("Alicante") || s.getName().equals("Valencia") || s.getName().equals("Castellón")) {
                             double v = ((double) y.getProvinceResults(s.getName()).getPollData().getVotes() / y.getProvinceResults(s.getName()).getPollData().getCensus()) * 100;
-                            XYChart.Data d = new XYChart.Data("" + y.getYear(),v);
+                            XYChart.Data d = new XYChart.Data("" + y.getYear(), v);
                             s.getData().add(d);
                         } else {
                             double v = ((double) y.getGlobalResults().getPollData().getVotes() / y.getGlobalResults().getPollData().getCensus()) * 100;
-                            XYChart.Data d = new XYChart.Data("" + y.getYear(),v);
+                            XYChart.Data d = new XYChart.Data("" + y.getYear(), v);
                             s1.getData().add(d);
                         }
                     }
                 }
                 participationChart.setData(FXCollections.observableArrayList(c));
             }
-            
+
             @Override
-            protected void failed(){
-            System.out.println("updateParticipationChart() ERROR");
+            protected void failed() {
+                System.out.println("updateParticipationChart() ERROR");
             }
         };
-        
+
         Thread t3 = new Thread(task3);
         t3.setDaemon(true);
         t3.start();
-        */
+
     }
-    
+
     // Listener del ChoiceBox de comarcas
     private void initComarcas() {
         comarcaSelector.getSelectionModel().selectedIndexProperty().addListener((ObservableValue<? extends Number> observableValue, Number number, Number number2) -> {
@@ -329,7 +381,6 @@ public class FXMLDocumentController implements Initializable {
                     filterToShow = (Double) new_val;
                     updatePartyVotesChart();
                 }
-                System.out.println(filterToShow);
             }
         });
     }
