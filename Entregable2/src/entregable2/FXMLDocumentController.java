@@ -94,7 +94,7 @@ public class FXMLDocumentController implements Initializable {
 
     // Lanzadera para actualizar las gráficas
     private void updateCharts() {
-        //updateSeatsDisChart();
+        updateSeatsDisChart();
         updatePartyVotesChart();
     }
 
